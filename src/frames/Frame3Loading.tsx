@@ -1,0 +1,110 @@
+import { useEffect, useState } from "react";
+import { motion } from "motion/react";
+import { copyReveal } from "../motion/transitions";
+import { travel } from "../motion/motion.tokens";
+import { LoadingPagination } from "../journey/PaginationIndicator";
+
+const LOADING_MS = 3000; // matches the frame's own name, "Three second loading state"
+const PAGINATION_MORPH_MS = 400;
+
+// Frame 3 - "Three second loading state" (node 16169:2894). Per the live
+// Figma frame, the coloured block is the mesh-gradient shader fill CONTAINED
+// within the rounded stage box (left:6,top:6,381x530) — the base page
+// underneath and around it is plain white, not the other way around. Both
+// greeting lines ("Welcome," and the name) are genuine text — even "Welcome,"
+// is only static in this one demo, not part of the design's own chrome — so
+// neither is baked into the image — both render as real HTML text on top,
+// matching the source's font/weight/colour exactly. Neither the block nor the
+// white page belongs to this frame any more: App owns a single persistent
+// gradient surface that has already closed in from full-bleed to the block by
+// the time this mounts, and the white page is the overlay it sits on. That
+// also removes a blink this frame used to cause, fading its own copy of the
+// block out at the end of loading only for the tour to fade another one in.
+export function Frame3Loading({ onDone, onSettled }: { onDone: () => void; onSettled: () => void }) {
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSettled(true), LOADING_MS);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!settled) return;
+    // The wordmark itself lives in App so it can survive into the tour; this
+    // is the cue for it to move up into its resting position.
+    onSettled();
+    const t = setTimeout(onDone, PAGINATION_MORPH_MS);
+    return () => clearTimeout(t);
+  }, [settled, onDone, onSettled]);
+
+  return (
+    <div style={{ position: "absolute", inset: 0 }}>
+      {/* Matches the source design's own greeting font exactly (Plus Jakarta
+          Sans Bold, 40px, blue-700) — positions taken from the baked-in
+          text's measured bounds before it was patched out.
+
+          The annotation gives the greeting its own entrance, distinct from the
+          logo's: "this will fade and move in from left to right" — so it
+          travels on x, where the logo travels up on y. It was previously only
+          fading, with no movement at all. */}
+      <motion.div
+        initial={{ opacity: 0, x: -travel.md }}
+        animate={{ opacity: settled ? 0 : 1, x: 0 }}
+        transition={copyReveal}
+        style={{
+          position: "absolute",
+          left: 25,
+          top: 406,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          fontFamily: "var(--font-family-base)",
+          fontWeight: 700,
+          fontSize: 40,
+          lineHeight: "36px",
+          color: "var(--color-blue-700)",
+        }}
+      >
+        <span>Welcome,</span>
+        <span>Emma</span>
+      </motion.div>
+
+      {/* Skeleton bars are top-level siblings of the stage box in Figma
+          (bottom-anchored to the full 852px frame), not nested inside it —
+          nesting them clipped them via the stage box's overflow:hidden. */}
+      <motion.div animate={{ opacity: settled ? 0 : 1 }} transition={{ duration: 0.3 }}>
+        <Skeleton left={119.5} top={556} width={154} height={14} />
+        <Skeleton left={52.5} top={578} width={288} height={35} />
+        <Skeleton left={32.5} top={623} width={328} height={70} />
+      </motion.div>
+
+      <LoadingPagination loaded={settled} loadingMs={LOADING_MS} morphMs={PAGINATION_MORPH_MS} />
+    </div>
+  );
+}
+
+function Skeleton({ left, top, width, height }: { left: number; top: number; width: number; height: number }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left,
+        top,
+        width,
+        height,
+        borderRadius: "var(--radius-stage)",
+        background: "var(--color-gray-25)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)",
+          animation: "shimmer-sweep var(--shimmer-duration) linear infinite",
+        }}
+      />
+    </div>
+  );
+}

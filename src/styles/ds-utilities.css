@@ -1,0 +1,16 @@
+/* Minimal local utility layer standing in for the DS's own ~572 dtds-* utility
+   classes until those are extracted per-component (see DS-INTEGRATION.md). */
+
+[data-dt-theme] .u-flex {
+  display: flex;
+}
+[data-dt-theme] .u-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+[data-dt-theme] .u-items-center {
+  align-items: center;
+}
+[data-dt-theme] .u-justify-between {
+  justify-content: space-between;
+}

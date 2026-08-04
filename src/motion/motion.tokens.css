@@ -1,0 +1,16 @@
+/* CSS-side mirror for the few raw CSS animations (skeleton shimmer) that
+   don't go through Motion for React. */
+
+:root {
+  --shimmer-duration: 1600ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --shimmer-duration: 0ms;
+  }
+}
+
+[data-reduced-motion="true"] {
+  --shimmer-duration: 0ms;
+}

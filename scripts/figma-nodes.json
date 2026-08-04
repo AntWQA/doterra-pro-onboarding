@@ -1,0 +1,133 @@
+{
+  "_comment": "Figma node ID and declared size (CSS px at 1x) for every exported asset. Branch fileKey JjpP6MD9RudzUL2Q8im5Cz of GKwuxiWOb5BEKilF2Qojkj. Frames 1-8 live in section 16188:4656 'Journey' on canvas 16143:86700; the loose animation pieces live in section 16182:6021 'Animation Components'. NOTE: get_metadata on Frames 4 (16179:29705) and 6 (16145:84167) returns a self-closing tag with no children \u2014 that is an MCP serialisation bug, NOT re-parenting. Query their children by ID directly (Frame 4 -> 16179:29706/29707, Frame 6 -> 16145:84168/84169/84174).",
+  "loading-gradient-block": {
+    "node": "16169:2896",
+    "w": 381,
+    "h": 530,
+    "note": "Frame 3 stage box. Greeting text patched out in post; validated against Frame 5's live render at mean delta 0.58. Same block is reused for Frames 4-8."
+  },
+  "mesh-gradient": {
+    "node": "16145:83921",
+    "w": 393,
+    "h": 852,
+    "note": "Full-bleed gradient, Frames 1-2 only. Twin in Frame 2 is 16145:84039."
+  },
+  "logomark": {
+    "node": "16145:83995",
+    "w": 29.854,
+    "h": 48,
+    "note": "Frame 1 instance; Frame 2's is 16145:84043. Existing asset is a 4x export (120x192), not 3x."
+  },
+  "pro-advisor-1": {
+    "node": "16182:4598",
+    "w": 330,
+    "h": 202,
+    "note": "'Meet Pro Advisor' card, Frame 4 via 16179:29711 > 16179:29707."
+  },
+  "pro-advisor-2-bubble": {
+    "node": "16179:30138",
+    "w": 167.234,
+    "h": 84.447
+  },
+  "pro-advisor-2-avatar": {
+    "node": "16179:30139",
+    "w": 48,
+    "h": 48
+  },
+  "pro-advisor-3": {
+    "node": "16182:4572",
+    "w": 180,
+    "h": 166,
+    "note": "Blue response card. Has SVG export settings in Figma \u2014 must force defaultFormat png."
+  },
+  "pro-advisor-4": {
+    "node": "16179:29721",
+    "w": 357,
+    "h": 52,
+    "note": "'Ask Pro Advisor' input field."
+  },
+  "tracking-min-qual": {
+    "node": "16182:5037",
+    "w": 228.347,
+    "h": 335.781,
+    "note": "COMPONENT 'Tracking 1' in section 16182:6021. Export this, NOT the placed instance 16179:30200 in Frame 5 \u2014 that one renders pre-clipped by the frame."
+  },
+  "tracking-fast-start": {
+    "node": "16182:4633",
+    "w": 202.975,
+    "h": 227.05,
+    "note": "COMPONENT 'Trcking 2' (sic) in section 16182:6021. Instance in Frame 5 is 16179:30233. Export carries shadow bleed; crop to node bounds."
+  },
+  "tracking-boost-module": {
+    "node": "16182:4789",
+    "w": 175,
+    "h": 252.5,
+    "note": "COMPONENT 'Tracking 3' in section 16182:6021. Instance in Frame 5 is 16179:30234. Exports at an exact 3x with no bleed."
+  },
+  "insight-card": {
+    "node": "16182:5040",
+    "w": 220.625,
+    "h": 132.5,
+    "note": "'Insights 2' in Animation Components. Frame 6 itself genuinely holds neither insight card."
+  },
+  "insight-sub-card": {
+    "node": "16182:5039",
+    "w": 333,
+    "h": 295,
+    "note": "'Insight 1'. Existing asset is 892x817 (297x272) \u2014 smaller than the node, so its bounds were trimmed by the chroma-key, not by Figma."
+  },
+  "my-team-card": {
+    "node": "16145:86190",
+    "w": 364,
+    "h": 435,
+    "note": "Renders 364x385 clipped by its parent in Frame 7."
+  },
+  "my-team-header": {
+    "node": "16145:86191",
+    "w": 353.7,
+    "h": 165.2
+  },
+  "my-team-row-thompson": {
+    "node": "16145:86193",
+    "w": 347,
+    "h": 70
+  },
+  "my-team-row-wilson": {
+    "node": "16145:86199",
+    "w": 347,
+    "h": 70,
+    "note": "Figma renders this 54px tall, not its declared 70 \u2014 confirmed via two independent export paths. Genuine source defect."
+  },
+  "my-team-star-pill": {
+    "node": "16145:86196",
+    "w": 133.65,
+    "h": 38.92
+  },
+  "tasks-advisor-card": {
+    "node": "16145:86407",
+    "w": 327.259,
+    "h": 195.708
+  },
+  "tasks-dropdown": {
+    "node": "16145:86408",
+    "w": 192.833,
+    "h": 112.625
+  },
+  "toast-notification": {
+    "node": "16145:86433",
+    "w": 361,
+    "h": 96
+  },
+  "dashboard-all": {
+    "node": null,
+    "w": 393,
+    "h": 1554,
+    "note": "Supplied directly by the designer, not exported here \u2014 the full scrollable dashboard revealed after the final swipe. 1x only; would benefit from a 3x re-export."
+  },
+  "dashboard-footer": {
+    "node": "16294:52278",
+    "w": 393,
+    "h": 90,
+    "note": "Dashboard-only sticky footer menu, exported at 3x."
+  }
+}

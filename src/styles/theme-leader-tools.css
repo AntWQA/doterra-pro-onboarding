@@ -1,0 +1,9 @@
+/* [data-dt-theme="leaderTools"] on the device frame, not :root — proves it's a
+   real theme and keeps the demo shell free to look different. See §4. */
+
+[data-dt-theme="leaderTools"] {
+  --font-family-base: "Rawline", -apple-system, "SF Pro Display", system-ui, sans-serif;
+  color: var(--color-text-body);
+  background: var(--color-surface-page);
+  font-family: var(--font-family-base);
+}

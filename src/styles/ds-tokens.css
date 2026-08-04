@@ -1,0 +1,27 @@
+/* Exact colour values pulled from the redesigned Figma frames' own token
+   references (var(--color/base/..., ...)) — not invented. */
+
+:root {
+  --color-blue-700: #0067dc;
+  --color-blue-100: #c8def6;
+  --color-blue-primary: #0051ad;
+  --color-bluegray-900: #1d2939;
+  --color-bluegray-700: #354657;
+  --color-text-secondary: #384250;
+  --color-text-muted: #6e7a87;
+  --color-border-light: #e7e9eb;
+  --color-border-base: #bec4c9;
+  --color-gray-50: #f0f0f0;
+  --color-gray-25: #f9f9f9;
+  --color-warning-lightest: #fef0c7;
+  --color-warning-lighter: #fedf89;
+  --color-warning-text: #dc6803;
+  --color-success-border: #a6f4c5;
+  --color-surface-card: #ffffff;
+
+  --font-family-base: "Plus Jakarta Sans", -apple-system, "SF Pro Display", system-ui, sans-serif;
+
+  --radius-stage: 16.723px;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+}
