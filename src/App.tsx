@@ -158,7 +158,7 @@ function StyleToggle({ value, onChange }: { value: ExperienceStyle; onChange: (v
           onClick={() => onChange(option)}
           className={value === option ? "style-toggle__option style-toggle__option--active" : "style-toggle__option"}
         >
-          {option === "original" ? "Original" : "Reskin"}
+          {option === "original" ? "V1" : "V2"}
         </button>
       ))}
     </div>
