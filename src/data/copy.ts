@@ -1,5 +1,4 @@
 // All strings sourced directly from the Figma frames — see FIGMA-DEFECTS.md
-// for the one defect reproduced deliberately (duplicate "Michael Thompson").
 
 export const splash = {
   title: "dōTERRA Pro",

@@ -108,7 +108,13 @@ export function LoadingPagination({ loaded, loadingMs, morphMs }: { loaded: bool
         initial={{ scaleX: reduceMotion ? 1 : 0 }}
         animate={{ scaleX: 1 }}
         transition={{ duration: reduceMotion ? 0 : loadingMs / 1000, ease: "linear" }}
-        style={{ position: "absolute", inset: 0, transformOrigin: "0% 50%" }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          transformOrigin: "0% 50%",
+          borderRadius: RADIUS,
+          overflow: "hidden",
+        }}
       >
         <motion.div
           initial={false}
@@ -120,9 +126,12 @@ export function LoadingPagination({ loaded, loadingMs, morphMs }: { loaded: bool
             <motion.div
               key={i}
               initial={false}
-              animate={{ backgroundColor: loaded && i > 0 ? gray : blue }}
+              animate={{
+                backgroundColor: loaded && i > 0 ? gray : blue,
+                borderRadius: loaded ? RADIUS : 0,
+              }}
               transition={{ duration: morphSeconds, ease: "easeOut" }}
-              style={{ flex: 1, height: "100%", borderRadius: RADIUS }}
+              style={{ flex: 1, height: "100%" }}
             />
           ))}
         </motion.div>
