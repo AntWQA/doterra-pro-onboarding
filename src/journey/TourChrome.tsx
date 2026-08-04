@@ -9,7 +9,7 @@ import type { ExperienceStyle } from "../experienceStyle";
 // space. These wrappers move each intact animation into the reskin's lower
 // demo region without changing its internal entrance/exit values.
 const STAGE_LAYOUTS = [
-  { left: 0, top: 330, scale: 0.75 },
+  { left: 0, top: 252, scale: 1 },
   { left: 6, top: 280, scale: 1 },
   { left: 6, top: 289, scale: 1 },
   { left: 6, top: 258, scale: 1 },
