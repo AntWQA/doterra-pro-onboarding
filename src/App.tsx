@@ -56,6 +56,21 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
     );
   }, [collapsing, dispatch]);
 
+  const enterLogin = useCallback(() => {
+    if (experienceStyle === "original") {
+      dispatch({ type: "GO_LOGIN" });
+      return;
+    }
+    if (collapsing) return;
+    setCollapsing(true);
+    timers.current.push(
+      window.setTimeout(() => {
+        setCollapsing(false);
+        dispatch({ type: "GO_LOGIN" });
+      }, CARD_COLLAPSE_MS),
+    );
+  }, [collapsing, dispatch, experienceStyle]);
+
   const onWordmarkSettled = useCallback(() => setWordmarkUp(true), []);
 
   const finishTour = () => {
@@ -101,7 +116,7 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
                   key="splash"
                   experienceStyle={experienceStyle}
                   collapsing={collapsing}
-                  onLogin={() => dispatch({ type: "GO_LOGIN" })}
+                  onLogin={enterLogin}
                   onTour={enterWelcome}
                 />
               )}
@@ -134,7 +149,7 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
                 changes nothing about it. Rendered last so it sits above the
                 stage, matching the z-index it had inside TourChrome. */}
             {(state.phase === "loading" || (experienceStyle === "original" && state.phase === "tour")) && (
-              <Wordmark settled={wordmarkUp} />
+              <Wordmark experienceStyle={experienceStyle} settled={wordmarkUp} />
             )}
           </motion.div>
         </TourRoot>

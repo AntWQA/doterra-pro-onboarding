@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { copyReveal } from "../motion/transitions";
 import { travel } from "../motion/motion.tokens";
+import type { ExperienceStyle } from "../experienceStyle";
 
 // The "dōTERRA Pro" wordmark is a SINGLE element owned by App and mounted for
 // the whole loading + tour run, not re-created per frame.
@@ -18,11 +19,12 @@ import { travel } from "../motion/motion.tokens";
 const CENTRED_Y = 201.36;
 const RESTING_Y = 86;
 
-export function Wordmark({ settled }: { settled: boolean }) {
+export function Wordmark({ experienceStyle, settled }: { experienceStyle: ExperienceStyle; settled: boolean }) {
+  const reskin = experienceStyle === "reskin";
   return (
     <motion.div
       initial={{ opacity: 0, y: CENTRED_Y + travel.sm }}
-      animate={{ opacity: 1, y: settled ? RESTING_Y : CENTRED_Y }}
+      animate={{ opacity: reskin && settled ? 0 : 1, y: reskin ? CENTRED_Y : settled ? RESTING_Y : CENTRED_Y }}
       transition={settled ? { duration: 0.5, ease: [0.16, 1, 0.3, 1] } : copyReveal}
       style={{
         position: "absolute",

@@ -94,7 +94,7 @@ const exitWith = (order: number) => ({
 // between the conversation and the input field. This is the stage-only
 // content — chrome (Skip/FAB/dots/wordmark/headline) is owned by TourChrome,
 // rendered once by TourJourney rather than remounted per step.
-export function Frame4AdvisorStage({ exiting }: StageProps) {
+export function Frame4AdvisorStage({ exiting, experienceStyle }: StageProps) {
   const [beat, setBeat] = useState<Beat>("container");
 
   useEffect(() => {
@@ -241,7 +241,7 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
           position: "absolute",
           left: "50%",
           translateX: "-50%",
-          top: 456,
+          top: experienceStyle === "reskin" ? 440 : 456,
           width: 357,
           borderRadius: 100,
           boxShadow: "0 4px 12px -2px rgba(16,24,40,0.06)",

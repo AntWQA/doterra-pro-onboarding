@@ -19,8 +19,8 @@ export function Frame2Login({ experienceStyle, collapsing, onLogin }: { experien
         // centre, on the same Ease In Back the other exits use, so it dips
         // very slightly larger first. Only once this is done does App close
         // the gradient in behind it.
-        animate={collapsing ? { opacity: 0, scale: 0, y: 0 } : { opacity: 1, y: 0 }}
-        transition={collapsing ? { duration: duration.exit, ease: easing.easeInBack } : containerReveal}
+        animate={collapsing ? (reskin ? { opacity: 1, scale: 1, y: 560 } : { opacity: 0, scale: 0, y: 0 }) : { opacity: 1, y: 0 }}
+        transition={collapsing ? { duration: duration.exit, ease: reskin ? easing.easeInOut : easing.easeInBack } : containerReveal}
         style={{
           position: "absolute",
           left: reskin ? 0 : 21.5,
