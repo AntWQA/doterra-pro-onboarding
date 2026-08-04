@@ -54,8 +54,8 @@ export function MeshGradientBackground({
         initial={false}
         animate={
           contained
-            ? { top: 53, height: 799, opacity: 1 }
-            : { top: 852, height: 0, opacity: 0 }
+            ? { top: 53, height: 799 }
+            : { top: 852, height: 0 }
         }
         transition={{ duration: duration.bubble, ease: easing.easeInOut }}
         style={{
@@ -66,6 +66,7 @@ export function MeshGradientBackground({
           background: "#ffffff",
           border: "1px solid var(--color-border-light)",
           boxSizing: "border-box",
+          opacity: 1,
           boxShadow: "0 4px 6px rgba(16,24,40,0.02), 0 12px 10px rgba(16,24,40,0.04)",
         }}
       />

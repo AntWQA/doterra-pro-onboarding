@@ -13,6 +13,7 @@ type Action =
   | { type: "LOADING_DONE" }
   | { type: "NEXT" }
   | { type: "GO_TO_STEP"; stepIndex: number }
+  | { type: "RESTART_TOUR" }
   | { type: "SKIP" };
 
 const STEP_COUNT = 5;
@@ -47,6 +48,9 @@ function reducer(state: JourneyState, action: Action): JourneyState {
         ...state,
         stepIndex: Math.max(0, Math.min(STEP_COUNT - 1, action.stepIndex)),
       };
+
+    case "RESTART_TOUR":
+      return { phase: "tour", stepIndex: 0 };
 
     case "SKIP":
       return { ...state, phase: "handoff" };

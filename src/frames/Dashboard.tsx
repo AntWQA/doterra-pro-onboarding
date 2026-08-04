@@ -13,7 +13,7 @@ const SCROLLING_CONTENT_HEIGHT = DASHBOARD_HEIGHT - FOOTER_HEIGHT;
 // viewport, because it is the whole scrollable dashboard rather than one
 // screenful. The dashboard owns its vertical scroll viewport while the
 // DeviceFrame continues to clip the app to the phone silhouette.
-export function Dashboard() {
+export function Dashboard({ onRetakeTour }: { onRetakeTour: () => void }) {
   return (
     <div
       style={{
@@ -37,8 +37,25 @@ export function Dashboard() {
         {/* The supplied long dashboard image already contains this menu in its
             final 90px. Clip that duplicate away, then reserve the same amount
             of scroll space so the last content clears the sticky footer. */}
-        <div style={{ width: 393, height: SCROLLING_CONTENT_HEIGHT, overflow: "hidden" }}>
+        <div style={{ position: "relative", width: 393, height: SCROLLING_CONTENT_HEIGHT, overflow: "hidden" }}>
           <img src={dashboardAll} alt="" style={{ width: 393, height: "auto", display: "block" }} />
+          <button
+            type="button"
+            aria-label="Retake onboarding tour"
+            onClick={onRetakeTour}
+            style={{
+              position: "absolute",
+              left: 16,
+              top: 536,
+              width: 361,
+              height: 101,
+              padding: 0,
+              border: 0,
+              borderRadius: 24,
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          />
         </div>
         <div aria-hidden style={{ height: FOOTER_HEIGHT }} />
       </div>

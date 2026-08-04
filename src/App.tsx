@@ -80,13 +80,20 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
     setTimeout(() => dispatch({ type: "SKIP" }), 500);
   };
 
+  const restartTour = () => {
+    setContained(true);
+    setWordmarkUp(true);
+    setSwiped(false);
+    dispatch({ type: "RESTART_TOUR" });
+  };
+
   return (
     <MotionConfig reducedMotion={reduce ? "always" : "never"}>
       <DeviceFrame>
         <TourRoot key={reduce ? "reduced" : "full"}>
           {/* Base layer: the real dashboard, revealed once onboarding swipes away. */}
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            <Dashboard />
+            <Dashboard onRetakeTour={restartTour} />
           </div>
 
           {/* Overlay: the onboarding page itself, slides off to reveal the base layer. */}
