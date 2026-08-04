@@ -150,7 +150,7 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
 function StyleToggle({ value, onChange }: { value: ExperienceStyle; onChange: (value: ExperienceStyle) => void }) {
   return (
     <div className="style-toggle" role="group" aria-label="Prototype style">
-      {(["original", "reskin"] as const).map((option) => (
+      {(["reskin", "original"] as const).map((option) => (
         <button
           key={option}
           type="button"
