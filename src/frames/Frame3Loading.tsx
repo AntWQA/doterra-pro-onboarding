@@ -55,9 +55,9 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
         transition={copyReveal}
         style={{
           position: "absolute",
-          left: reskin ? 20 : 25,
+          left: reskin ? 32 : 25,
           top: reskin ? undefined : 406,
-          bottom: reskin ? 32 : undefined,
+          bottom: reskin ? 48 : undefined,
           display: "flex",
           flexDirection: "column",
           gap: 12,
