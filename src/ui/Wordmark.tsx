@@ -17,14 +17,15 @@ import type { ExperienceStyle } from "../experienceStyle";
 // into its final position" as the loading settles — which is exactly the 86px
 // resting spot the tour frames use.
 const CENTRED_Y = 201.36;
+const RESKIN_CENTRED_Y = 426;
 const RESTING_Y = 86;
 
 export function Wordmark({ experienceStyle, settled }: { experienceStyle: ExperienceStyle; settled: boolean }) {
   const reskin = experienceStyle === "reskin";
   return (
     <motion.div
-      initial={{ opacity: 0, y: CENTRED_Y + travel.sm }}
-      animate={{ opacity: reskin && settled ? 0 : 1, y: reskin ? CENTRED_Y : settled ? RESTING_Y : CENTRED_Y }}
+      initial={{ opacity: 0, y: (reskin ? RESKIN_CENTRED_Y : CENTRED_Y) + travel.sm }}
+      animate={{ opacity: reskin && settled ? 0 : 1, y: reskin ? RESKIN_CENTRED_Y : settled ? RESTING_Y : CENTRED_Y }}
       transition={settled ? { duration: 0.5, ease: [0.16, 1, 0.3, 1] } : copyReveal}
       style={{
         position: "absolute",
