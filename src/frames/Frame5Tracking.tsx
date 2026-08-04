@@ -28,7 +28,7 @@ const CARD_SHADOW = "0 8px 16px -4px rgba(16,24,40,0.1), 0 4px 6px -2px rgba(16,
 const CARDS = [
   { src: minQual, left: -25.64, top: 161.19, width: 228.35, radius: 16, z: 1, floatDelay: 0 },
   { src: fastStart, left: 112.04, top: 126, width: 202.98, radius: 16, z: 2, floatDelay: 0.3 },
-  { src: boostModule, left: 248.29, top: 224.01, width: 175, radius: 8, z: 3, floatDelay: 0.6 },
+  { src: boostModule, left: 248.29, top: 179, width: 175, radius: 8, z: 3, floatDelay: 0.6 },
 ];
 
 // Beat 2, "Card Exit": each card scales rapidly TOWARDS the viewport while

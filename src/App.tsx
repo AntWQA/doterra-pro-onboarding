@@ -68,7 +68,7 @@ function App() {
             // gradient contracts and stops covering the full frame. This is
             // also the white page that Frame 3 and the tour frames sit on —
             // they no longer paint their own.
-            style={{ position: "absolute", inset: 0, zIndex: 1, background: "#ffffff" }}
+            style={{ position: "absolute", inset: 0, zIndex: 1, background: "transparent" }}
           >
             {/* One persistent gradient surface for every onboarding screen:
                 full-bleed for Frames 1-2, closed in to the 381x530 block from
@@ -100,13 +100,13 @@ function App() {
                 through the tour, so crossing from Frame 3 into slide 4
                 changes nothing about it. Rendered last so it sits above the
                 stage, matching the z-index it had inside TourChrome. */}
-            {(state.phase === "loading" || state.phase === "tour") && <Wordmark settled={wordmarkUp} />}
+            {state.phase === "loading" && <Wordmark settled={wordmarkUp} />}
           </motion.div>
         </TourRoot>
 
         {/* Native chrome is deliberately outside every animated page layer:
             it stays fixed while onboarding screens and the dashboard move. */}
-        <SystemBar />
+        <SystemBar light={state.phase !== "handoff"} />
       </DeviceFrame>
     </MotionConfig>
   );

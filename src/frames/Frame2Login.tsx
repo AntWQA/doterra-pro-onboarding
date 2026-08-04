@@ -5,8 +5,8 @@ import { login } from "../data/copy";
 import { containerReveal, copyReveal } from "../motion/transitions";
 import { duration, easing, stagger, travel } from "../motion/motion.tokens";
 
-// Frame 2 - Login. Same mesh-gradient background, floating card at
-// (21.5, 165), 350x522.
+// Reskinned login: the form occupies a full-width bottom sheet while the
+// lavender photograph remains visible as the compact hero above it.
 export function Frame2Login({ collapsing, onLogin }: { collapsing: boolean; onLogin: () => void }) {
   return (
     <div style={{ position: "relative", height: "100%" }}>
@@ -21,14 +21,15 @@ export function Frame2Login({ collapsing, onLogin }: { collapsing: boolean; onLo
         transition={collapsing ? { duration: duration.exit, ease: easing.easeInBack } : containerReveal}
         style={{
           position: "absolute",
-          left: 21.5,
-          top: 165,
-          width: 350,
-          height: 522,
-          borderRadius: 32,
+          left: 0,
+          top: 310,
+          width: 393,
+          height: 542,
+          borderRadius: "32px 32px 0 0",
           background: "#ffffff",
           transformOrigin: "center",
           boxShadow: "0 4px 6px rgba(16,24,40,0.02), 0 12px 10px rgba(16,24,40,0.04)",
+          border: "1px solid var(--color-border-light)",
           padding: "48px 24px 56px",
           boxSizing: "border-box",
         }}

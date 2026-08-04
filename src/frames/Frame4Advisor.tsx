@@ -11,21 +11,14 @@ import avatarImg from "../assets/exports/pro-advisor-2-avatar.png";
 
 type Beat = "container" | "avatar" | "userTyping" | "bubble" | "thinking" | "response";
 
-const WELCOME_TOP = 133;
-const WELCOME_HEIGHT = 202;
-const PROMPT_GAP = 12;
-// The updated Meet Pro Advisor card ends at y=335. A small visual gap keeps
-// the avatar/prompt row distinct while still fitting above the fixed input.
-const PROMPT_TOP = WELCOME_TOP + WELCOME_HEIGHT + PROMPT_GAP;
-const BUBBLE_BOTTOM = PROMPT_TOP + 86;
-const RESPONSE_GAP = 16;
-const RESPONSE_BOX = { left: 33.33, top: BUBBLE_BOTTOM + RESPONSE_GAP, width: 180.3 };
+const WELCOME_TOP = 583;
+const PROMPT_TOP = 625;
+const RESPONSE_BOX = { left: 178, top: 430, width: 180.3 };
 
-// Once the response arrives, the complete stack (welcome card, avatar, prompt,
-// and response) moves together. At -205px, the prompt lands at y=142 and the
-// full response ends above the fixed input at y=456. The welcome card fades
-// away during that movement so its clipped remainder does not linger above.
-const SCROLL_UP = 205;
+// The reskin orders the response above the input and user prompt, so the stack
+// no longer needs to translate upward when the reply arrives. The welcome
+// card still fades on that beat, preserving the existing focus transition.
+const SCROLL_UP = 0;
 
 // The welcome card sits still at its natural Figma position (133 — not
 // "high", that's the design's own spec) for the whole time the conversation
@@ -58,11 +51,8 @@ const INPUT_ENTRANCE_DELAY = 0.1;
 // bounds exactly), so the offsets were just pushing content off-centre —
 // the welcome card sat at 37 with only 14px to its right. Figma has that
 // node at x=25, which is centring it, so that is what it does now.
-const STAGE_WIDTH = 381;
-const centreIn = (width: number) => (STAGE_WIDTH - width) / 2;
-
-const WELCOME_WIDTH = 330;
-const BUBBLE_LEFT = 132.11 + 8.33;
+const WELCOME_WIDTH = 246;
+const BUBBLE_LEFT = 211;
 const BUBBLE_WIDTH = 167.3;
 
 // Beat 7, "Page Transition": every visible element exits in sequence, each
@@ -146,7 +136,7 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
           transition={exiting ? exitWith(EXIT_ORDER.avatar) : beat === "container" ? containerReveal : { duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           style={{
             position: "absolute",
-            left: centreIn(WELCOME_WIDTH),
+            left: 16,
             top: WELCOME_TOP,
             width: WELCOME_WIDTH,
             borderRadius: 16.7,
@@ -164,8 +154,8 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
           transition={exiting ? exitWith(EXIT_ORDER.avatar) : avatarEntrance}
           style={{
             position: "absolute",
-            left: BUBBLE_LEFT + BUBBLE_WIDTH + 10,
-            top: PROMPT_TOP,
+            left: BUBBLE_LEFT + BUBBLE_WIDTH - 48,
+            top: PROMPT_TOP - 55,
             width: 48,
             height: 48,
             borderRadius: "50%",
@@ -245,10 +235,9 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
         }
         style={{
           position: "absolute",
-          left: "50%",
-          translateX: "-50%",
-          top: 456,
-          width: 357,
+          left: 27,
+          top: 484,
+          width: 329,
           borderRadius: 100,
           boxShadow: "0 4px 12px -2px rgba(16,24,40,0.06)",
         }}

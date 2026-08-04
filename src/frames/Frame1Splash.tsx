@@ -5,8 +5,8 @@ import { containerReveal, copyReveal } from "../motion/transitions";
 import { duration, easing, stagger, travel } from "../motion/motion.tokens";
 import logomark from "../assets/exports/logomark.png";
 
-// Frame 1 - Splash. Mesh gradient background (no hero photo), floating
-// fully-rounded card at (21.5, 186), 350x480.
+// Reskinned splash: lavender photography remains visible above a full-width
+// bottom sheet. The existing card entrance/collapse choreography is retained.
 export function Frame1Splash({ collapsing, onLogin, onTour }: { collapsing: boolean; onLogin: () => void; onTour: () => void }) {
   return (
     <div style={{ position: "relative", height: "100%" }}>
@@ -21,13 +21,14 @@ export function Frame1Splash({ collapsing, onLogin, onTour }: { collapsing: bool
         transition={collapsing ? { duration: duration.exit, ease: easing.easeInBack } : containerReveal}
         style={{
           position: "absolute",
-          left: 21.5,
-          top: 186,
-          width: 350,
+          left: 0,
+          top: 372,
+          width: 393,
           height: 480,
-          borderRadius: 32,
+          borderRadius: "32px 32px 0 0",
           background: "#ffffff",
           transformOrigin: "center",
+          border: "1px solid var(--color-border-light)",
           boxShadow: "0 4px 6px rgba(16,24,40,0.02), 0 12px 10px rgba(16,24,40,0.04)",
           padding: "56px 32px",
           display: "flex",

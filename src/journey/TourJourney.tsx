@@ -68,6 +68,7 @@ export function TourJourney({
       // Progress dots track the tap, not the animation, so pressing Next is
       // acknowledged immediately while the outgoing frame is still leaving.
       stepIndex={stepIndex}
+      shownStepIndex={shown}
       stepCount={STEP_COUNT}
       headline={frame.headline}
       body={

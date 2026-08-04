@@ -4,8 +4,8 @@ import { usePureReducedMotion } from "../motion/useReducedMotion";
 // Shared geometry from Figma nodes 16294:52199 and 16294:52079. Five 40px
 // dashes plus four 4px gaps resolve to the loading bar's exact 216px width.
 const PAGINATION_POSITION = {
-  left: 20.486,
-  top: 768,
+  left: 20,
+  top: 97.5,
 } as const;
 
 const WIDTH = 216;
