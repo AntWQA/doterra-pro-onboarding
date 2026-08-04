@@ -26,7 +26,7 @@ export const loading = {
 };
 
 export const eyebrow = "tools to help you";
-export const reskinEyebrow = "we’ll help you";
+export const reskinEyebrow = "tools to help you";
 
 export const tourFrames = [
   {
