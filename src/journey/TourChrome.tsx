@@ -1,24 +1,26 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, type PanInfo } from "motion/react";
-import { eyebrow } from "../data/copy";
+import { eyebrow, reskinEyebrow } from "../data/copy";
 import { copyReveal } from "../motion/transitions";
 import { PaginationDashes } from "./PaginationIndicator";
+import type { ExperienceStyle } from "../experienceStyle";
 
 // The stage state machines remain authored in the original 381px coordinate
 // space. These wrappers move each intact animation into the reskin's lower
 // demo region without changing its internal entrance/exit values.
 const STAGE_LAYOUTS = [
-  { left: 0, top: 0 },
-  { left: 6, top: 280 },
-  { left: 6, top: 289 },
-  { left: 6, top: 258 },
-  { left: 6, top: 277 },
+  { left: 0, top: 330, scale: 0.75 },
+  { left: 6, top: 280, scale: 1 },
+  { left: 6, top: 289, scale: 1 },
+  { left: 6, top: 258, scale: 1 },
+  { left: 6, top: 277, scale: 1 },
 ] as const;
 
 // Shared chrome across Frames 4-8: progress + Skip at the top of the white
 // sheet, left-aligned copy beneath, demo content in the lower half, and the
 // persistent FAB anchored to the bottom-right.
 export function TourChrome({
+  experienceStyle,
   stepIndex,
   shownStepIndex,
   stepCount,
@@ -34,6 +36,7 @@ export function TourChrome({
   onNavigate,
   onSkip,
 }: {
+  experienceStyle: ExperienceStyle;
   stepIndex: number;
   shownStepIndex: number;
   stepCount: number;
@@ -52,6 +55,7 @@ export function TourChrome({
   const [nextPulse, setNextPulse] = useState(0);
   const firstPulseTimer = useRef<number | null>(null);
   const repeatingPulseTimer = useRef<number | null>(null);
+  const reskin = experienceStyle === "reskin";
   const stageLayout = STAGE_LAYOUTS[shownStepIndex];
 
   const stopNextPulse = useCallback(() => {
@@ -113,24 +117,38 @@ export function TourChrome({
       onDragEnd={handleSwipe}
       style={{ position: "absolute", inset: 0, touchAction: "pan-y" }}
     >
-      <div style={{ position: "absolute", top: 93, right: 22, zIndex: 5 }}>
-        <SkipButton onSkip={onSkip} />
-      </div>
+      {reskin ? (
+        <>
+          <div style={{ position: "absolute", top: 93, right: 22, zIndex: 5 }}>
+            <SkipButton onSkip={onSkip} />
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              left: stageLayout.left,
+              top: stageLayout.top,
+              width: 381,
+              height: 852,
+              zIndex: 1,
+              transform: `scale(${stageLayout.scale})`,
+              transformOrigin: "0 0",
+            }}
+          >
+            {stage}
+          </div>
+        </>
+      ) : (
+        <div style={{ position: "absolute", left: 0, top: 6, width: 393, height: 530, overflow: "hidden" }}>
+          <div style={{ position: "absolute", left: 6, top: 0, width: 381, height: 530 }}>
+            <div style={{ position: "absolute", top: 59, right: 12, zIndex: 5 }}>
+              <SkipButton onSkip={onSkip} />
+            </div>
+            {stage}
+          </div>
+        </div>
+      )}
 
-      <div
-        style={{
-          position: "absolute",
-          left: stageLayout.left,
-          top: stageLayout.top,
-          width: 381,
-          height: 852,
-          zIndex: 1,
-        }}
-      >
-        {stage}
-      </div>
-
-      {shownStepIndex === 3 && (
+      {reskin && shownStepIndex === 3 && (
         <div
           aria-hidden
           style={{
@@ -158,15 +176,16 @@ export function TourChrome({
         transition={copyExiting ? { ...copyReveal, delay: copyExitDelayMs / 1000 } : copyReveal}
         style={{
           position: "absolute",
-          left: 20,
-          top: 162,
-          width: 353,
+          left: reskin ? 20 : 6,
+          top: reskin ? 162 : 556,
+          width: reskin ? 353 : 381,
           boxSizing: "border-box",
+          padding: reskin ? 0 : "0 16px",
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 12,
-          textAlign: "left",
+          alignItems: reskin ? "flex-start" : "center",
+          gap: reskin ? 12 : 6,
+          textAlign: reskin ? "left" : "center",
           zIndex: 3,
         }}
       >
@@ -177,19 +196,19 @@ export function TourChrome({
             fontSize: 12,
             letterSpacing: 3.33,
             textTransform: "uppercase",
-            color: "#384250",
+            color: reskin ? "#384250" : "var(--color-text-secondary)",
           }}
         >
-          {eyebrow}
+          {reskin ? reskinEyebrow : eyebrow}
         </span>
         <span
           style={{
             fontFamily: "var(--font-family-base)",
             fontWeight: 600,
-            fontSize: 32,
-            lineHeight: "40px",
+            fontSize: reskin ? 32 : 24,
+            lineHeight: reskin ? "40px" : "32px",
             letterSpacing: -0.33,
-            color: "var(--color-bluegray-900)",
+            color: reskin ? "var(--color-bluegray-900)" : "var(--color-blue-700)",
           }}
         >
           {headline}
@@ -197,20 +216,20 @@ export function TourChrome({
         <span
           style={{
             fontFamily: "var(--font-family-base)",
-            fontWeight: 400,
+            fontWeight: reskin ? 400 : 500,
             fontSize: 16,
             lineHeight: "24px",
             letterSpacing: -0.33,
-            color: "var(--color-bluegray-900)",
+            color: reskin ? "var(--color-bluegray-900)" : "var(--color-bluegray-700)",
           }}
         >
           {body}
         </span>
       </motion.div>
 
-      <PaginationDashes stepIndex={stepIndex} stepCount={stepCount} onSelect={navigate} />
+      <PaginationDashes experienceStyle={experienceStyle} stepIndex={stepIndex} stepCount={stepCount} onSelect={navigate} />
 
-      <NextFab isLastStep={isLastStep} onPress={handleNext} pulse={nextPulse} />
+      <NextFab experienceStyle={experienceStyle} isLastStep={isLastStep} onPress={handleNext} pulse={nextPulse} />
     </motion.div>
   );
 }
@@ -239,7 +258,7 @@ function SkipButton({ onSkip }: { onSkip: () => void }) {
   );
 }
 
-function NextFab({ isLastStep, onPress, pulse }: { isLastStep: boolean; onPress: () => void; pulse: number }) {
+function NextFab({ experienceStyle, isLastStep, onPress, pulse }: { experienceStyle: ExperienceStyle; isLastStep: boolean; onPress: () => void; pulse: number }) {
   return (
     <motion.button
       type="button"
@@ -248,8 +267,8 @@ function NextFab({ isLastStep, onPress, pulse }: { isLastStep: boolean; onPress:
       whileTap={{ scale: 0.94 }}
       style={{
         position: "absolute",
-        left: 317,
-        top: 757,
+        left: experienceStyle === "reskin" ? 317 : 320,
+        top: experienceStyle === "reskin" ? 757 : 747,
         width: 56,
         height: 56,
         borderRadius: 16,

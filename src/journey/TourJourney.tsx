@@ -6,6 +6,7 @@ import { Frame5TrackingStage, TRACKING_ENTRANCE_MS, TRACKING_EXIT_MS } from "../
 import { Frame6InsightsStage, INSIGHTS_ENTRANCE_MS, INSIGHTS_EXIT_MS } from "../frames/Frame6Insights";
 import { Frame7MyTeamStage, MYTEAM_ENTRANCE_MS, MYTEAM_EXIT_MS } from "../frames/Frame7MyTeam";
 import { Frame8TasksStage, TASKS_ENTRANCE_MS, TASKS_EXIT_MS } from "../frames/Frame8Tasks";
+import type { ExperienceStyle } from "../experienceStyle";
 
 // Each frame's outro is its own, per the designer's annotations, so each one
 // declares how long it needs to leave. `copyExitDelayMs` is when the headline
@@ -41,11 +42,13 @@ const SEPARATION_PAUSE_MS = 200;
 // `animate` objects, which stops Motion propagating variants to them, so an
 // `exit` on a wrapper would never reach the individual elements.
 export function TourJourney({
+  experienceStyle,
   stepIndex,
   onNext,
   onNavigate,
   onSkip,
 }: {
+  experienceStyle: ExperienceStyle;
   stepIndex: number;
   onNext: () => void;
   onNavigate: (stepIndex: number) => void;
@@ -65,6 +68,7 @@ export function TourJourney({
 
   return (
     <TourChrome
+      experienceStyle={experienceStyle}
       // Progress dots track the tap, not the animation, so pressing Next is
       // acknowledged immediately while the outgoing frame is still leaving.
       stepIndex={stepIndex}
@@ -90,7 +94,7 @@ export function TourJourney({
       onNext={onNext}
       onNavigate={onNavigate}
       onSkip={onSkip}
-      stage={<Stage key={shown} exiting={exiting} />}
+      stage={<Stage key={shown} exiting={exiting} experienceStyle={experienceStyle} />}
     />
   );
 }

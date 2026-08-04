@@ -28,7 +28,7 @@ const CARD_SHADOW = "0 8px 16px -4px rgba(16,24,40,0.1), 0 4px 6px -2px rgba(16,
 const CARDS = [
   { src: minQual, left: -25.64, top: 161.19, width: 228.35, radius: 16, z: 1, floatDelay: 0 },
   { src: fastStart, left: 112.04, top: 126, width: 202.98, radius: 16, z: 2, floatDelay: 0.3 },
-  { src: boostModule, left: 248.29, top: 179, width: 175, radius: 8, z: 3, floatDelay: 0.6 },
+  { src: boostModule, left: 248.29, top: 224.01, reskinTop: 179, width: 175, radius: 8, z: 3, floatDelay: 0.6 },
 ];
 
 // Beat 2, "Card Exit": each card scales rapidly TOWARDS the viewport while
@@ -48,7 +48,7 @@ export const TRACKING_EXIT_MS =
 export const TRACKING_ENTRANCE_MS =
   (CARDS.length - 1) * stagger.cardEntrance * 1000 + duration.bubble * 1000;
 
-export function Frame5TrackingStage({ exiting }: StageProps) {
+export function Frame5TrackingStage({ exiting, experienceStyle }: StageProps) {
   const [settled, setSettled] = useState(false);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export function Frame5TrackingStage({ exiting }: StageProps) {
               ? { duration: duration.exitFast, ease: easing.easeInBack, delay: exitOrder(i) * stagger.cardExit }
               : { duration: duration.bubble, ease: easing.easeOut, delay: i * stagger.cardEntrance }
           }
-          style={{ position: "absolute", left: card.left, top: card.top, width: card.width, zIndex: card.z }}
+          style={{ position: "absolute", left: card.left, top: experienceStyle === "reskin" && "reskinTop" in card ? card.reskinTop : card.top, width: card.width, zIndex: card.z }}
         >
           <motion.img
             src={card.src}

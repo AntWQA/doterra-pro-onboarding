@@ -19,8 +19,6 @@ export function SystemBar({ light = false }: { light?: boolean }) {
         zIndex: 1000,
         pointerEvents: "none",
         background: "rgba(255,255,255,0)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
       }}
     >
       <div

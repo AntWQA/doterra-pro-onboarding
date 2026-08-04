@@ -25,7 +25,8 @@ export const loading = {
   greetingLine2: "{first name}",
 };
 
-export const eyebrow = "we’ll help you";
+export const eyebrow = "tools to help you";
+export const reskinEyebrow = "we’ll help you";
 
 export const tourFrames = [
   {

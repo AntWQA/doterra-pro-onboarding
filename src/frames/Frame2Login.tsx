@@ -4,10 +4,12 @@ import { TextInput } from "../ui/TextInput";
 import { login } from "../data/copy";
 import { containerReveal, copyReveal } from "../motion/transitions";
 import { duration, easing, stagger, travel } from "../motion/motion.tokens";
+import type { ExperienceStyle } from "../experienceStyle";
 
 // Reskinned login: the form occupies a full-width bottom sheet while the
 // lavender photograph remains visible as the compact hero above it.
-export function Frame2Login({ collapsing, onLogin }: { collapsing: boolean; onLogin: () => void }) {
+export function Frame2Login({ experienceStyle, collapsing, onLogin }: { experienceStyle: ExperienceStyle; collapsing: boolean; onLogin: () => void }) {
+  const reskin = experienceStyle === "reskin";
   return (
     <div style={{ position: "relative", height: "100%" }}>
       <motion.div
@@ -21,15 +23,15 @@ export function Frame2Login({ collapsing, onLogin }: { collapsing: boolean; onLo
         transition={collapsing ? { duration: duration.exit, ease: easing.easeInBack } : containerReveal}
         style={{
           position: "absolute",
-          left: 0,
-          top: 310,
-          width: 393,
-          height: 542,
-          borderRadius: "32px 32px 0 0",
+          left: reskin ? 0 : 21.5,
+          top: reskin ? 310 : 165,
+          width: reskin ? 393 : 350,
+          height: reskin ? 542 : 522,
+          borderRadius: reskin ? "32px 32px 0 0" : 32,
           background: "#ffffff",
           transformOrigin: "center",
           boxShadow: "0 4px 6px rgba(16,24,40,0.02), 0 12px 10px rgba(16,24,40,0.04)",
-          border: "1px solid var(--color-border-light)",
+          border: reskin ? "1px solid var(--color-border-light)" : "none",
           padding: "48px 24px 56px",
           boxSizing: "border-box",
         }}

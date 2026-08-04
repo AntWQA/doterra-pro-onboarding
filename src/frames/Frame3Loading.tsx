@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { copyReveal } from "../motion/transitions";
 import { travel } from "../motion/motion.tokens";
 import { LoadingPagination } from "../journey/PaginationIndicator";
+import type { ExperienceStyle } from "../experienceStyle";
 
 const LOADING_MS = 3000; // matches the frame's own name, "Three second loading state"
 const PAGINATION_MORPH_MS = 400;
@@ -20,7 +21,7 @@ const PAGINATION_MORPH_MS = 400;
 // the time this mounts, and the white page is the overlay it sits on. That
 // also removes a blink this frame used to cause, fading its own copy of the
 // block out at the end of loading only for the tour to fade another one in.
-export function Frame3Loading({ onDone, onSettled }: { onDone: () => void; onSettled: () => void }) {
+export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experienceStyle: ExperienceStyle; onDone: () => void; onSettled: () => void }) {
   const [settled, setSettled] = useState(false);
 
   useEffect(() => {
@@ -78,7 +79,7 @@ export function Frame3Loading({ onDone, onSettled }: { onDone: () => void; onSet
         <Skeleton left={32.5} top={623} width={328} height={70} />
       </motion.div>
 
-      <LoadingPagination loaded={settled} loadingMs={LOADING_MS} morphMs={PAGINATION_MORPH_MS} />
+      <LoadingPagination experienceStyle={experienceStyle} loaded={settled} loadingMs={LOADING_MS} morphMs={PAGINATION_MORPH_MS} />
     </div>
   );
 }

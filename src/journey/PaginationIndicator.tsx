@@ -1,11 +1,16 @@
 import { motion } from "motion/react";
 import { usePureReducedMotion } from "../motion/useReducedMotion";
+import type { ExperienceStyle } from "../experienceStyle";
 
 // Shared geometry from Figma nodes 16294:52199 and 16294:52079. Five 40px
 // dashes plus four 4px gaps resolve to the loading bar's exact 216px width.
-const PAGINATION_POSITION = {
+const RESKIN_POSITION = {
   left: 20,
   top: 97.5,
+} as const;
+const ORIGINAL_POSITION = {
+  left: 20.486,
+  top: 768,
 } as const;
 
 const WIDTH = 216;
@@ -22,17 +27,20 @@ export function PaginationDashes({
   stepIndex,
   stepCount,
   onSelect,
+  experienceStyle,
 }: {
   stepIndex: number;
   stepCount: number;
   onSelect: (stepIndex: number) => void;
+  experienceStyle: ExperienceStyle;
 }) {
+  const position = experienceStyle === "reskin" ? RESKIN_POSITION : ORIGINAL_POSITION;
   return (
     <div
       aria-label="Onboarding steps"
       style={{
         position: "absolute",
-        ...PAGINATION_POSITION,
+        ...position,
         width: WIDTH,
         height: HEIGHT,
         display: "flex",
@@ -76,9 +84,10 @@ export function PaginationDashes({
   );
 }
 
-export function LoadingPagination({ loaded, loadingMs, morphMs }: { loaded: boolean; loadingMs: number; morphMs: number }) {
+export function LoadingPagination({ experienceStyle, loaded, loadingMs, morphMs }: { experienceStyle: ExperienceStyle; loaded: boolean; loadingMs: number; morphMs: number }) {
   const reduceMotion = usePureReducedMotion();
   const morphSeconds = reduceMotion ? 0 : morphMs / 1000;
+  const position = experienceStyle === "reskin" ? RESKIN_POSITION : ORIGINAL_POSITION;
 
   return (
     <div
@@ -89,7 +98,7 @@ export function LoadingPagination({ loaded, loadingMs, morphMs }: { loaded: bool
       aria-valuenow={loaded ? 100 : undefined}
       style={{
         position: "absolute",
-        ...PAGINATION_POSITION,
+        ...position,
         width: WIDTH,
         height: HEIGHT,
         borderRadius: RADIUS,

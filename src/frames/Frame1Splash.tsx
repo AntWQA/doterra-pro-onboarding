@@ -4,10 +4,12 @@ import { splash } from "../data/copy";
 import { containerReveal, copyReveal } from "../motion/transitions";
 import { duration, easing, stagger, travel } from "../motion/motion.tokens";
 import logomark from "../assets/exports/logomark.png";
+import type { ExperienceStyle } from "../experienceStyle";
 
 // Reskinned splash: lavender photography remains visible above a full-width
 // bottom sheet. The existing card entrance/collapse choreography is retained.
-export function Frame1Splash({ collapsing, onLogin, onTour }: { collapsing: boolean; onLogin: () => void; onTour: () => void }) {
+export function Frame1Splash({ experienceStyle, collapsing, onLogin, onTour }: { experienceStyle: ExperienceStyle; collapsing: boolean; onLogin: () => void; onTour: () => void }) {
+  const reskin = experienceStyle === "reskin";
   return (
     <div style={{ position: "relative", height: "100%" }}>
       <motion.div
@@ -21,14 +23,14 @@ export function Frame1Splash({ collapsing, onLogin, onTour }: { collapsing: bool
         transition={collapsing ? { duration: duration.exit, ease: easing.easeInBack } : containerReveal}
         style={{
           position: "absolute",
-          left: 0,
-          top: 372,
-          width: 393,
+          left: reskin ? 0 : 21.5,
+          top: reskin ? 372 : 186,
+          width: reskin ? 393 : 350,
           height: 480,
-          borderRadius: "32px 32px 0 0",
+          borderRadius: reskin ? "32px 32px 0 0" : 32,
           background: "#ffffff",
           transformOrigin: "center",
-          border: "1px solid var(--color-border-light)",
+          border: reskin ? "1px solid var(--color-border-light)" : "none",
           boxShadow: "0 4px 6px rgba(16,24,40,0.02), 0 12px 10px rgba(16,24,40,0.04)",
           padding: "56px 32px",
           display: "flex",
