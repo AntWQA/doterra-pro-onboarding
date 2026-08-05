@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { copyReveal } from "../motion/transitions";
 import { travel } from "../motion/motion.tokens";
 import { LoadingPagination } from "../journey/PaginationIndicator";
+import type { ExperienceStyle } from "../experienceStyle";
 
 const LOADING_MS = 3000; // matches the frame's own name, "Three second loading state"
 const PAGINATION_MORPH_MS = 400;
@@ -20,8 +21,9 @@ const PAGINATION_MORPH_MS = 400;
 // the time this mounts, and the white page is the overlay it sits on. That
 // also removes a blink this frame used to cause, fading its own copy of the
 // block out at the end of loading only for the tour to fade another one in.
-export function Frame3Loading({ onDone, onSettled }: { onDone: () => void; onSettled: () => void }) {
+export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experienceStyle: ExperienceStyle; onDone: () => void; onSettled: () => void }) {
   const [settled, setSettled] = useState(false);
+  const reskin = experienceStyle === "reskin";
 
   useEffect(() => {
     const t = setTimeout(() => setSettled(true), LOADING_MS);
@@ -53,8 +55,9 @@ export function Frame3Loading({ onDone, onSettled }: { onDone: () => void; onSet
         transition={copyReveal}
         style={{
           position: "absolute",
-          left: 25,
-          top: 406,
+          left: reskin ? 32 : 25,
+          top: reskin ? undefined : 406,
+          bottom: reskin ? 48 : undefined,
           display: "flex",
           flexDirection: "column",
           gap: 12,
@@ -73,12 +76,22 @@ export function Frame3Loading({ onDone, onSettled }: { onDone: () => void; onSet
           (bottom-anchored to the full 852px frame), not nested inside it —
           nesting them clipped them via the stage box's overflow:hidden. */}
       <motion.div animate={{ opacity: settled ? 0 : 1 }} transition={{ duration: 0.3 }}>
-        <Skeleton left={119.5} top={556} width={154} height={14} />
-        <Skeleton left={52.5} top={578} width={288} height={35} />
-        <Skeleton left={32.5} top={623} width={328} height={70} />
+        {reskin ? (
+          <>
+            <Skeleton left={20} top={162} width={154} height={14} />
+            <Skeleton left={20} top={190} width={288} height={35} />
+            <Skeleton left={20} top={241} width={353} height={70} />
+          </>
+        ) : (
+          <>
+            <Skeleton left={119.5} top={556} width={154} height={14} />
+            <Skeleton left={52.5} top={578} width={288} height={35} />
+            <Skeleton left={32.5} top={623} width={328} height={70} />
+          </>
+        )}
       </motion.div>
 
-      <LoadingPagination loaded={settled} loadingMs={LOADING_MS} morphMs={PAGINATION_MORPH_MS} />
+      <LoadingPagination experienceStyle={experienceStyle} loaded={settled} loadingMs={LOADING_MS} morphMs={PAGINATION_MORPH_MS} />
     </div>
   );
 }

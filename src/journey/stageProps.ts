@@ -8,4 +8,6 @@
 // exit prop on a wrapper would never reach them.
 export interface StageProps {
   exiting: boolean;
+  experienceStyle: ExperienceStyle;
 }
+import type { ExperienceStyle } from "../experienceStyle";

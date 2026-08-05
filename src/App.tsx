@@ -13,6 +13,7 @@ import { useJourneyMachine } from "./journey/useJourneyMachine";
 import { usePureReducedMotion } from "./motion/useReducedMotion";
 import { pageSwipe } from "./motion/transitions";
 import { duration } from "./motion/motion.tokens";
+import type { ExperienceStyle } from "./experienceStyle";
 
 // Entering the welcome screen is a three-step handover, run in this order
 // rather than all at once:
@@ -25,6 +26,19 @@ const CARD_COLLAPSE_MS = duration.exit * 1000;
 const GRADIENT_CLOSE_MS = duration.bubble * 1000;
 
 function App() {
+  const [experienceStyle, setExperienceStyle] = useState<ExperienceStyle>("reskin");
+
+  return (
+    <>
+      <StyleToggle value={experienceStyle} onChange={setExperienceStyle} />
+      {/* The key intentionally remounts the entire journey. Switching styles
+          therefore always resets the prototype to the opening splash. */}
+      <Prototype key={experienceStyle} experienceStyle={experienceStyle} />
+    </>
+  );
+}
+
+function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
   const { state, dispatch } = useJourneyMachine();
   const reduce = usePureReducedMotion();
   const [swiped, setSwiped] = useState(false);
@@ -42,6 +56,21 @@ function App() {
     );
   }, [collapsing, dispatch]);
 
+  const enterLogin = useCallback(() => {
+    if (experienceStyle === "original") {
+      dispatch({ type: "GO_LOGIN" });
+      return;
+    }
+    if (collapsing) return;
+    setCollapsing(true);
+    timers.current.push(
+      window.setTimeout(() => {
+        setCollapsing(false);
+        dispatch({ type: "GO_LOGIN" });
+      }, CARD_COLLAPSE_MS),
+    );
+  }, [collapsing, dispatch, experienceStyle]);
+
   const onWordmarkSettled = useCallback(() => setWordmarkUp(true), []);
 
   const finishTour = () => {
@@ -51,13 +80,20 @@ function App() {
     setTimeout(() => dispatch({ type: "SKIP" }), 500);
   };
 
+  const restartTour = () => {
+    setContained(true);
+    setWordmarkUp(true);
+    setSwiped(false);
+    dispatch({ type: "RESTART_TOUR" });
+  };
+
   return (
     <MotionConfig reducedMotion={reduce ? "always" : "never"}>
       <DeviceFrame>
         <TourRoot key={reduce ? "reduced" : "full"}>
           {/* Base layer: the real dashboard, revealed once onboarding swipes away. */}
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            <Dashboard />
+            <Dashboard onRetakeTour={restartTour} />
           </div>
 
           {/* Overlay: the onboarding page itself, slides off to reveal the base layer. */}
@@ -68,25 +104,44 @@ function App() {
             // gradient contracts and stops covering the full frame. This is
             // also the white page that Frame 3 and the tour frames sit on —
             // they no longer paint their own.
-            style={{ position: "absolute", inset: 0, zIndex: 1, background: "#ffffff" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 1,
+              background: experienceStyle === "original" ? "#ffffff" : "transparent",
+            }}
           >
             {/* One persistent gradient surface for every onboarding screen:
                 full-bleed for Frames 1-2, closed in to the 381x530 block from
                 Frame 3 onwards. Screens on top of it must leave their own
                 backgrounds transparent. */}
-            <MeshGradientBackground contained={contained} />
+            <MeshGradientBackground contained={contained} experienceStyle={experienceStyle} />
 
             <AnimatePresence mode="wait">
               {state.phase === "splash" && (
-                <Frame1Splash key="splash" collapsing={collapsing} onLogin={() => dispatch({ type: "GO_LOGIN" })} onTour={enterWelcome} />
+                <Frame1Splash
+                  key="splash"
+                  experienceStyle={experienceStyle}
+                  collapsing={collapsing}
+                  onLogin={enterLogin}
+                  onTour={enterWelcome}
+                />
               )}
-              {state.phase === "login" && <Frame2Login key="login" collapsing={collapsing} onLogin={enterWelcome} />}
+              {state.phase === "login" && (
+                <Frame2Login key="login" experienceStyle={experienceStyle} collapsing={collapsing} onLogin={enterWelcome} />
+              )}
               {state.phase === "loading" && (
-                <Frame3Loading key="loading" onDone={() => dispatch({ type: "LOADING_DONE" })} onSettled={onWordmarkSettled} />
+                <Frame3Loading
+                  key="loading"
+                  experienceStyle={experienceStyle}
+                  onDone={() => dispatch({ type: "LOADING_DONE" })}
+                  onSettled={onWordmarkSettled}
+                />
               )}
               {state.phase === "tour" && (
                 <TourJourney
                   key="tour"
+                  experienceStyle={experienceStyle}
                   stepIndex={state.stepIndex}
                   onNext={state.stepIndex >= 4 ? finishTour : () => dispatch({ type: "NEXT" })}
                   onNavigate={(stepIndex) => dispatch({ type: "GO_TO_STEP", stepIndex })}
@@ -100,15 +155,35 @@ function App() {
                 through the tour, so crossing from Frame 3 into slide 4
                 changes nothing about it. Rendered last so it sits above the
                 stage, matching the z-index it had inside TourChrome. */}
-            {(state.phase === "loading" || state.phase === "tour") && <Wordmark settled={wordmarkUp} />}
+            {(state.phase === "loading" || (experienceStyle === "original" && state.phase === "tour")) && (
+              <Wordmark experienceStyle={experienceStyle} settled={wordmarkUp} />
+            )}
           </motion.div>
         </TourRoot>
 
         {/* Native chrome is deliberately outside every animated page layer:
             it stays fixed while onboarding screens and the dashboard move. */}
-        <SystemBar />
+        <SystemBar light={experienceStyle === "reskin" && state.phase !== "handoff"} />
       </DeviceFrame>
     </MotionConfig>
+  );
+}
+
+function StyleToggle({ value, onChange }: { value: ExperienceStyle; onChange: (value: ExperienceStyle) => void }) {
+  return (
+    <div className="style-toggle" role="group" aria-label="Prototype style">
+      {(["reskin", "original"] as const).map((option) => (
+        <button
+          key={option}
+          type="button"
+          aria-pressed={value === option}
+          onClick={() => onChange(option)}
+          className={value === option ? "style-toggle__option style-toggle__option--active" : "style-toggle__option"}
+        >
+          {option === "original" ? "V2" : "V1"}
+        </button>
+      ))}
+    </div>
   );
 }
 

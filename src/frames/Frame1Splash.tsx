@@ -4,10 +4,12 @@ import { splash } from "../data/copy";
 import { containerReveal, copyReveal } from "../motion/transitions";
 import { duration, easing, stagger, travel } from "../motion/motion.tokens";
 import logomark from "../assets/exports/logomark.png";
+import type { ExperienceStyle } from "../experienceStyle";
 
-// Frame 1 - Splash. Mesh gradient background (no hero photo), floating
-// fully-rounded card at (21.5, 186), 350x480.
-export function Frame1Splash({ collapsing, onLogin, onTour }: { collapsing: boolean; onLogin: () => void; onTour: () => void }) {
+// Reskinned splash: lavender photography remains visible above a full-width
+// bottom sheet. The existing card entrance/collapse choreography is retained.
+export function Frame1Splash({ experienceStyle, collapsing, onLogin, onTour }: { experienceStyle: ExperienceStyle; collapsing: boolean; onLogin: () => void; onTour: () => void }) {
+  const reskin = experienceStyle === "reskin";
   return (
     <div style={{ position: "relative", height: "100%" }}>
       <motion.div
@@ -17,17 +19,18 @@ export function Frame1Splash({ collapsing, onLogin, onTour }: { collapsing: bool
         // centre, on the same Ease In Back the other exits use, so it dips
         // very slightly larger first. Only once this is done does App close
         // the gradient in behind it.
-        animate={collapsing ? { opacity: 0, scale: 0, y: 0 } : { opacity: 1, y: 0 }}
-        transition={collapsing ? { duration: duration.exit, ease: easing.easeInBack } : containerReveal}
+        animate={collapsing ? (reskin ? { opacity: 1, scale: 1, y: 560 } : { opacity: 0, scale: 0, y: 0 }) : { opacity: 1, y: 0 }}
+        transition={collapsing ? { duration: duration.exit, ease: reskin ? easing.easeInOut : easing.easeInBack } : containerReveal}
         style={{
           position: "absolute",
-          left: 21.5,
-          top: 186,
-          width: 350,
+          left: reskin ? 0 : 21.5,
+          top: reskin ? 372 : 186,
+          width: reskin ? 393 : 350,
           height: 480,
-          borderRadius: 32,
+          borderRadius: reskin ? "32px 32px 0 0" : 32,
           background: "#ffffff",
           transformOrigin: "center",
+          border: reskin ? "1px solid var(--color-border-light)" : "none",
           boxShadow: "0 4px 6px rgba(16,24,40,0.02), 0 12px 10px rgba(16,24,40,0.04)",
           padding: "56px 32px",
           display: "flex",

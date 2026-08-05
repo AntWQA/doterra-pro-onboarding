@@ -2,8 +2,12 @@ import { useEffect } from "react";
 import { motion, useMotionValue, animate } from "motion/react";
 import { duration, easing, stagger } from "../motion/motion.tokens";
 import type { StageProps } from "../journey/stageProps";
+// Derived from the current my-team-card.png source with an exact pixel crop:
+// x:15, y:0, width:1062, height:496. Regenerate this asset whenever the main
+// card is replaced so the header cannot retain stale edge or corner pixels.
 import teamHeader from "../assets/exports/my-team-header.png";
 import rowThompson from "../assets/exports/my-team-row-thompson.png";
+import rowWilliams from "../assets/exports/my-team-row-williams.png";
 import rowWilson from "../assets/exports/my-team-row-wilson.png";
 import starPill from "../assets/exports/my-team-star-pill.png";
 
@@ -20,27 +24,35 @@ const CARD_HEIGHT = 435;
 // one unit, header stays pinned, rows stagger in 0.2s apart, THEN the
 // middle row auto-swipes to reveal the star action as part of the entrance
 // sequence — not a separate idle-hint loop that cancels on touch, unlike
-// the earlier build. Reproduces the source design's duplicate "Michael
-// Thompson" content deliberately — see FIGMA-DEFECTS.md.
+// the earlier build.
 // Beat 2, "Component Exit": the whole card leaves as ONE unit — no per-row
 // stagger on the way out, unlike the entrance. A subtle upward anticipation
 // bounce, then it slides down off-screen while fading "slightly" (so it is
 // still partly visible as it clears the bottom, rather than dissolving).
 export const MYTEAM_EXIT_MS = duration.exit * 1000;
-// The final entrance action is the middle row's automatic swipe reveal.
+const ROWS_SETTLED_MS = 500 + 2 * stagger.contactRow * 1000 + 500;
+const SWIPE_DURATION_MS = 350;
+const SWIPE_HOLD_MS = 2000;
+// The final entrance action is the middle row's automatic swipe reveal,
+// two-second hold, and return swipe that hides the action again.
 export const MYTEAM_ENTRANCE_MS =
-  500 + 2 * stagger.contactRow * 1000 + 500 + 350;
+  ROWS_SETTLED_MS + SWIPE_DURATION_MS + SWIPE_HOLD_MS + SWIPE_DURATION_MS;
 const EXIT_DROP = 560; // clears the stage's bottom clip at y=536 from top:145
 
 export function Frame7MyTeamStage({ exiting }: StageProps) {
   const rowX = useMotionValue(0);
 
   useEffect(() => {
-    const rowsEnteredAt = MYTEAM_ENTRANCE_MS - 350;
-    const t = setTimeout(() => {
+    const openTimer = setTimeout(() => {
       animate(rowX, OPEN_OFFSET, { duration: 0.35, ease: [0.16, 1, 0.3, 1] });
-    }, rowsEnteredAt);
-    return () => clearTimeout(t);
+    }, ROWS_SETTLED_MS);
+    const closeTimer = setTimeout(() => {
+      animate(rowX, 0, { duration: 0.35, ease: [0.16, 1, 0.3, 1] });
+    }, ROWS_SETTLED_MS + SWIPE_DURATION_MS + SWIPE_HOLD_MS);
+    return () => {
+      clearTimeout(openTimer);
+      clearTimeout(closeTimer);
+    };
   }, [rowX]);
 
   return (
@@ -73,9 +85,16 @@ export function Frame7MyTeamStage({ exiting }: StageProps) {
       <RowReveal delay={0} left={12.5} top={180.5} src={rowThompson} />
 
       <div style={{ position: "absolute", left: 0, top: 255.9, width: CARD_WIDTH }}>
-        <img src={starPill} alt="Mark as starred" style={{ position: "absolute", left: 225, top: 15.5, width: 133.65 }} />
         <motion.img
-          src={rowThompson}
+          src={starPill}
+          alt="Mark as starred"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.1, delay: stagger.contactRow + 0.5 }}
+          style={{ position: "absolute", left: 225, top: 15.5, width: 133.65 }}
+        />
+        <motion.img
+          src={rowWilliams}
           alt=""
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}

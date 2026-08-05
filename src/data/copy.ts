@@ -1,5 +1,4 @@
 // All strings sourced directly from the Figma frames — see FIGMA-DEFECTS.md
-// for the one defect reproduced deliberately (duplicate "Michael Thompson").
 
 export const splash = {
   title: "dōTERRA Pro",
@@ -27,6 +26,7 @@ export const loading = {
 };
 
 export const eyebrow = "tools to help you";
+export const reskinEyebrow = "tools to help you";
 
 export const tourFrames = [
   {

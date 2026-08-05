@@ -9,22 +9,16 @@ import proAdvisor4 from "../assets/exports/pro-advisor-4.png";
 import bubbleImg from "../assets/exports/pro-advisor-2-bubble.png";
 import avatarImg from "../assets/exports/pro-advisor-2-avatar.png";
 
-type Beat = "container" | "avatar" | "bubble" | "thinking" | "response";
+type Beat = "container" | "avatar" | "userTyping" | "bubble" | "thinking" | "response";
 
 const WELCOME_TOP = 133;
 const WELCOME_HEIGHT = 202;
 const PROMPT_GAP = 12;
-// The updated Meet Pro Advisor card ends at y=335. A small visual gap keeps
-// the avatar/prompt row distinct while still fitting above the fixed input.
 const PROMPT_TOP = WELCOME_TOP + WELCOME_HEIGHT + PROMPT_GAP;
 const BUBBLE_BOTTOM = PROMPT_TOP + 86;
 const RESPONSE_GAP = 16;
 const RESPONSE_BOX = { left: 33.33, top: BUBBLE_BOTTOM + RESPONSE_GAP, width: 180.3 };
 
-// Once the response arrives, the complete stack (welcome card, avatar, prompt,
-// and response) moves together. At -205px, the prompt lands at y=142 and the
-// full response ends above the fixed input at y=456. The welcome card fades
-// away during that movement so its clipped remainder does not linger above.
 const SCROLL_UP = 205;
 
 // The welcome card sits still at its natural Figma position (133 — not
@@ -41,7 +35,8 @@ const SCROLL_UP = 205;
 // moves if this is retuned.
 const READ_WELCOME_MS = 4500;
 const BEATS = {
-  avatar: READ_WELCOME_MS,
+  avatar: READ_WELCOME_MS - 2000,
+  userTyping: READ_WELCOME_MS - 1500,
   bubble: READ_WELCOME_MS + 500,
   thinking: READ_WELCOME_MS + 1800,
   response: READ_WELCOME_MS + 2800,
@@ -91,20 +86,21 @@ const exitWith = (order: number) => ({
   delay: order * stagger.exitCascade,
 });
 
-// Frame 4 - the 7-beat sequence: container reveal -> avatar entrance ->
-// input field reveal (paired with the container) -> avatar entrance ->
-// conversation begins (typewriter via clip-path, no real text needed) ->
+// Frame 4 - the conversation sequence: container + input reveal -> early
+// avatar entrance -> user typing indicator -> conversation begins (typewriter
+// via clip-path, no real text needed) ->
 // AI thinking bubble -> response card (node 16182:4572,
 // "Pro Advisor 3") renders in where the thinking bubble was, in the gap
 // between the conversation and the input field. This is the stage-only
 // content — chrome (Skip/FAB/dots/wordmark/headline) is owned by TourChrome,
 // rendered once by TourJourney rather than remounted per step.
-export function Frame4AdvisorStage({ exiting }: StageProps) {
+export function Frame4AdvisorStage({ exiting, experienceStyle }: StageProps) {
   const [beat, setBeat] = useState<Beat>("container");
 
   useEffect(() => {
     const timers = [
       setTimeout(() => setBeat("avatar"), BEATS.avatar),
+      setTimeout(() => setBeat("userTyping"), BEATS.userTyping),
       setTimeout(() => setBeat("bubble"), BEATS.bubble),
       setTimeout(() => setBeat("thinking"), BEATS.thinking),
       setTimeout(() => setBeat("response"), BEATS.response),
@@ -112,10 +108,11 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const order: Beat[] = ["container", "avatar", "bubble", "thinking", "response"];
+  const order: Beat[] = ["container", "avatar", "userTyping", "bubble", "thinking", "response"];
   const beatIndex = order.indexOf(beat);
   const avatarIn = beatIndex >= 1;
-  const bubbleIn = beatIndex >= 2;
+  const userTyping = beat === "userTyping";
+  const bubbleIn = beatIndex >= 3;
   const thinking = beat === "thinking";
   const responded = beat === "response";
   // Once the AI actually has something to say, the live conversation shifts
@@ -169,6 +166,19 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
           }}
         />
 
+        {/* The user arrives before their message. Reuse the same three-dot
+            loop as the AI thinking state, right-aligned beside the avatar,
+            until the full prompt bubble replaces it. */}
+        <AnimatePresence>
+          {userTyping && (
+            <TypingBubble
+              key="user-typing"
+              left={BUBBLE_LEFT + BUBBLE_WIDTH - 72}
+              top={PROMPT_TOP + 4}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Beat 3: Conversation Begins — bubble expands, typewriter via clip-path reveal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -191,7 +201,7 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
             the same spot. This was previously missing entirely: the response
             asset was imported but never rendered. */}
         <AnimatePresence mode="wait">
-          {thinking && <ThinkingBubble key="thinking" />}
+          {thinking && <TypingBubble key="thinking" left={RESPONSE_BOX.left} top={RESPONSE_BOX.top} />}
           {responded && (
             <motion.img
               key="response"
@@ -231,7 +241,7 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
           position: "absolute",
           left: "50%",
           translateX: "-50%",
-          top: 456,
+          top: experienceStyle === "reskin" ? 440 : 456,
           width: 357,
           borderRadius: 100,
           boxShadow: "0 4px 12px -2px rgba(16,24,40,0.06)",
@@ -246,7 +256,7 @@ export function Frame4AdvisorStage({ exiting }: StageProps) {
 // 350ms per step (a ~1050ms cycle), which overran the top of the range.
 const THINKING_STEP_MS = (delayToken.thinkingLoop * 1000) / 3;
 
-function ThinkingBubble() {
+function TypingBubble({ left, top }: { left: number; top: number }) {
   const [dots, setDots] = useState(1);
   useEffect(() => {
     const id = setInterval(() => setDots((d) => (d % 3) + 1), THINKING_STEP_MS);
@@ -260,8 +270,8 @@ function ThinkingBubble() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       style={{
         position: "absolute",
-        left: RESPONSE_BOX.left,
-        top: RESPONSE_BOX.top,
+        left,
+        top,
         width: 72,
         height: 40,
         borderRadius: 20,

@@ -4,7 +4,9 @@ import cellular from "../assets/exports/status-cellular.svg";
 
 // Fixed native-style chrome from Figma node 16294:52261. This component is
 // mounted once above the whole app, so it never participates in page motion.
-export function SystemBar() {
+export function SystemBar({ light = false }: { light?: boolean }) {
+  const foreground = light ? "#ffffff" : "#282828";
+  const iconFilter = light ? "brightness(0) invert(1)" : "none";
   return (
     <div
       aria-hidden
@@ -34,14 +36,14 @@ export function SystemBar() {
           fontSize: 14,
           lineHeight: "16px",
           letterSpacing: -0.28,
-          color: "#282828",
+          color: foreground,
         }}
       >
         9:41
       </div>
 
-      <img src={cellular} alt="" style={{ position: "absolute", right: 74, top: 21.67, width: 17, height: 10.667 }} />
-      <img src={wifi} alt="" style={{ position: "absolute", right: 53.67, top: 21.33, width: 15.333, height: 11 }} />
+      <img src={cellular} alt="" style={{ position: "absolute", right: 74, top: 21.67, width: 17, height: 10.667, filter: iconFilter }} />
+      <img src={wifi} alt="" style={{ position: "absolute", right: 53.67, top: 21.33, width: 15.333, height: 11, filter: iconFilter }} />
 
       <div
         style={{
@@ -51,12 +53,12 @@ export function SystemBar() {
           width: 22,
           height: 11.333,
           boxSizing: "border-box",
-          border: "1px solid rgba(44,44,44,0.6)",
+          border: `1px solid ${light ? "rgba(255,255,255,0.6)" : "rgba(44,44,44,0.6)"}`,
           borderRadius: 2.667,
           opacity: 0.35,
         }}
       />
-      <img src={cap} alt="" style={{ position: "absolute", right: 24.34, top: 25, width: 1.328, height: 4 }} />
+      <img src={cap} alt="" style={{ position: "absolute", right: 24.34, top: 25, width: 1.328, height: 4, filter: iconFilter }} />
       <div
         style={{
           position: "absolute",
@@ -65,7 +67,7 @@ export function SystemBar() {
           width: 18,
           height: 7.333,
           borderRadius: 1.333,
-          background: "#282828",
+          background: foreground,
         }}
       />
     </div>

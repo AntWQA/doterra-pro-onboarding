@@ -30,8 +30,7 @@ export const TASKS_EXIT_MS = 0;
 // The confirmation toast is the final entrance beat (3750ms + 500ms).
 export const TASKS_ENTRANCE_MS = 4250;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function Frame8TasksStage(_props: StageProps) {
+export function Frame8TasksStage({ experienceStyle }: StageProps) {
   const [beat, setBeat] = useState<Beat>("drop");
 
   useEffect(() => {
@@ -62,8 +61,8 @@ export function Frame8TasksStage(_props: StageProps) {
   // Everything is centred on the stage's own axis (190.5) and laid out from
   // the card: Figma puts the dropdown at +67.68/+41.49 relative to it, and
   // the toast is 361 wide, which centres at exactly the x=10 its own node
-  // declares. The toast sits BELOW the card now rather than on top of it,
-  // since the card is no longer vacating that space.
+  // declares. V1 pulls the toast 24px over the card's lower edge to visually
+  // connect the confirmation to its source; V2 retains the original 16px gap.
   const cardBox = { left: centreIn(327.7), top: 170.33, width: 327.7, height: 196 };
   const dropdownBox = {
     left: cardBox.left + 67.68,
@@ -73,7 +72,7 @@ export function Frame8TasksStage(_props: StageProps) {
   };
   const toastBox = {
     left: centreIn(361),
-    top: cardBox.top + cardBox.height + 16,
+    top: cardBox.top + cardBox.height + (experienceStyle === "reskin" ? -24 : 16),
     width: 361,
     height: 96,
   };
