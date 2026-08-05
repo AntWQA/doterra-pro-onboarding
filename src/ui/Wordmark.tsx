@@ -13,9 +13,14 @@ import type { ExperienceStyle } from "../experienceStyle";
 // instance means nothing happens at that boundary at all.
 //
 // Frame 3's annotation gives it the only movement it ever makes: it fades in
-// low and centred while the greeting is on screen, then "the logo will move up
-// into its final position" as the loading settles — which is exactly the 86px
-// resting spot the tour frames use.
+// low and centred while the greeting is on screen, then travels up as the
+// loading settles.
+//
+// It no longer has a resting spot to travel TO — V2's onboarding frames have
+// dropped the wordmark entirely (reference 16179:29705 has nothing above the
+// progress bar), so rather than parking at 86 it fades out on the way up and
+// App stops mounting it once the tour begins. RESTING_Y is kept only as the
+// target that upward travel aims at while the fade completes.
 const CENTRED_Y = 201.36;
 const RESKIN_CENTRED_Y = 426;
 const RESTING_Y = 86;
@@ -25,7 +30,7 @@ export function Wordmark({ experienceStyle, settled }: { experienceStyle: Experi
   return (
     <motion.div
       initial={{ opacity: 0, y: (reskin ? RESKIN_CENTRED_Y : CENTRED_Y) + travel.sm }}
-      animate={{ opacity: reskin && settled ? 0 : 1, y: reskin ? RESKIN_CENTRED_Y : settled ? RESTING_Y : CENTRED_Y }}
+      animate={{ opacity: settled ? 0 : 1, y: reskin ? RESKIN_CENTRED_Y : settled ? RESTING_Y : CENTRED_Y }}
       transition={settled ? { duration: 0.5, ease: [0.16, 1, 0.3, 1] } : copyReveal}
       style={{
         position: "absolute",

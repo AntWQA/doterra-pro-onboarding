@@ -6,7 +6,10 @@ import { LoadingPagination } from "../journey/PaginationIndicator";
 import type { ExperienceStyle } from "../experienceStyle";
 
 const LOADING_MS = 3000; // matches the frame's own name, "Three second loading state"
-const PAGINATION_MORPH_MS = 400;
+// Beat between the loading bar settling and the tour mounting. Previously
+// this doubled as the bar's morph-into-dashes duration; there are no dashes
+// now, but the pause itself still separates the two screens.
+const HANDOFF_MS = 400;
 
 // Frame 3 - "Three second loading state" (node 16169:2894). Per the live
 // Figma frame, the coloured block is the mesh-gradient shader fill CONTAINED
@@ -35,7 +38,7 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
     // The wordmark itself lives in App so it can survive into the tour; this
     // is the cue for it to move up into its resting position.
     onSettled();
-    const t = setTimeout(onDone, PAGINATION_MORPH_MS);
+    const t = setTimeout(onDone, HANDOFF_MS);
     return () => clearTimeout(t);
   }, [settled, onDone, onSettled]);
 
@@ -84,14 +87,19 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
           </>
         ) : (
           <>
-            <Skeleton left={119.5} top={556} width={154} height={14} />
-            <Skeleton left={52.5} top={578} width={288} height={35} />
-            <Skeleton left={32.5} top={623} width={328} height={70} />
+            {/* Left-aligned on the greeting's own edge (x=25), matching the
+                copy alignment change. They were centred — measured gaps of
+                120/120, 53/53 and 33/33 — which read as a different column
+                from the left-aligned text directly above them. Widths are
+                unchanged, so the ragged right edge still reads as text. */}
+            <Skeleton left={25} top={556} width={154} height={14} />
+            <Skeleton left={25} top={578} width={288} height={35} />
+            <Skeleton left={25} top={623} width={328} height={70} />
           </>
         )}
       </motion.div>
 
-      <LoadingPagination experienceStyle={experienceStyle} loaded={settled} loadingMs={LOADING_MS} morphMs={PAGINATION_MORPH_MS} />
+      <LoadingPagination experienceStyle={experienceStyle} loaded={settled} loadingMs={LOADING_MS} />
     </div>
   );
 }

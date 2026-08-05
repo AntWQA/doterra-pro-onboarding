@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, type PanInfo } from "motion/react";
-import { eyebrow, reskinEyebrow } from "../data/copy";
 import { copyReveal } from "../motion/transitions";
 import { PaginationDashes } from "./PaginationIndicator";
 import type { ExperienceStyle } from "../experienceStyle";
@@ -24,6 +23,7 @@ export function TourChrome({
   stepIndex,
   shownStepIndex,
   stepCount,
+  eyebrow,
   headline,
   body,
   stage,
@@ -40,6 +40,7 @@ export function TourChrome({
   stepIndex: number;
   shownStepIndex: number;
   stepCount: number;
+  eyebrow: string;
   headline: ReactNode;
   body: ReactNode;
   stage: ReactNode;
@@ -140,7 +141,7 @@ export function TourChrome({
       ) : (
         <div style={{ position: "absolute", left: 0, top: 6, width: 393, height: 530, overflow: "hidden" }}>
           <div style={{ position: "absolute", left: 6, top: 0, width: 381, height: 530 }}>
-            <div style={{ position: "absolute", top: 59, right: 12, zIndex: 5 }}>
+            <div style={{ position: "absolute", top: 59, right: 16, zIndex: 5 }}>
               <SkipButton onSkip={onSkip} />
             </div>
             {stage}
@@ -183,9 +184,9 @@ export function TourChrome({
           padding: reskin ? 0 : "0 16px",
           display: "flex",
           flexDirection: "column",
-          alignItems: reskin ? "flex-start" : "center",
+          alignItems: "flex-start",
           gap: reskin ? 12 : 6,
-          textAlign: reskin ? "left" : "center",
+          textAlign: "left",
           zIndex: 3,
         }}
       >
@@ -199,7 +200,7 @@ export function TourChrome({
             color: reskin ? "#384250" : "var(--color-text-secondary)",
           }}
         >
-          {reskin ? reskinEyebrow : eyebrow}
+          {eyebrow}
         </span>
         <span
           style={{
@@ -208,7 +209,7 @@ export function TourChrome({
             fontSize: reskin ? 32 : 24,
             lineHeight: reskin ? "40px" : "32px",
             letterSpacing: -0.33,
-            color: reskin ? "var(--color-bluegray-900)" : "var(--color-blue-700)",
+            color: "var(--color-bluegray-900)",
           }}
         >
           {headline}
@@ -237,6 +238,11 @@ export function TourChrome({
 // Figma's "utility-secondary / xsmall" Skip button renders as plain text —
 // no pill, border, or fill — so the DS chip styling this used to have was
 // never part of the design.
+//
+// Both styles carry a trailing arrow. Its measurements come from the button's own
+// variables (node 16398:67818): size/icon/button/sm = 16 for the glyph,
+// size/padding/xs = 4 for the gap, colour/text/link/secondary/base = #0067dc
+// for both text and icon. That is what widens the node from 31 to 51px.
 function SkipButton({ onSkip }: { onSkip: () => void }) {
   return (
     <button
@@ -251,9 +257,21 @@ function SkipButton({ onSkip }: { onSkip: () => void }) {
         fontSize: 14,
         color: "var(--color-blue-700)",
         cursor: "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
       }}
     >
       Skip
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+        <path
+          d="M3.5 8h9M9 4.5 12.5 8 9 11.5"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
     </button>
   );
 }

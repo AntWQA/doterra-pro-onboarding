@@ -2,3 +2,12 @@
 @import "../motion/motion.tokens.css";
 @import "./ds-tokens.css";
 @import "./demo.css";
+
+.dashboard-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dashboard-scroll::-webkit-scrollbar {
+  display: none;
+}

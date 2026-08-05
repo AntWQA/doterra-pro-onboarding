@@ -93,7 +93,7 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
         <TourRoot key={reduce ? "reduced" : "full"}>
           {/* Base layer: the real dashboard, revealed once onboarding swipes away. */}
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            <Dashboard onRetakeTour={restartTour} />
+            <Dashboard experienceStyle={experienceStyle} onRetakeTour={restartTour} />
           </div>
 
           {/* Overlay: the onboarding page itself, slides off to reveal the base layer. */}
@@ -155,9 +155,7 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
                 through the tour, so crossing from Frame 3 into slide 4
                 changes nothing about it. Rendered last so it sits above the
                 stage, matching the z-index it had inside TourChrome. */}
-            {(state.phase === "loading" || (experienceStyle === "original" && state.phase === "tour")) && (
-              <Wordmark experienceStyle={experienceStyle} settled={wordmarkUp} />
-            )}
+            {state.phase === "loading" && <Wordmark experienceStyle={experienceStyle} settled={wordmarkUp} />}
           </motion.div>
         </TourRoot>
 

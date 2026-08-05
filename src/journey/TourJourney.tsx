@@ -74,6 +74,7 @@ export function TourJourney({
       stepIndex={stepIndex}
       shownStepIndex={shown}
       stepCount={STEP_COUNT}
+      eyebrow={frame.eyebrow}
       headline={frame.headline}
       body={
         "bodyBold" in frame ? (
