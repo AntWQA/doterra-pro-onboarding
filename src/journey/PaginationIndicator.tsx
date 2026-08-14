@@ -23,6 +23,7 @@ import type { ExperienceStyle } from "../experienceStyle";
 const GEOMETRY = {
   reskin: { left: 20, top: 97.5, width: 216, height: 10 },
   original: { left: 22, top: 70.5, width: 172, height: 10 },
+  hybrid: { left: 22, top: 70.5, width: 172, height: 10 },
 } as const;
 
 const RADIUS = 100;

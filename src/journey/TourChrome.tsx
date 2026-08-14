@@ -277,25 +277,31 @@ function SkipButton({ onSkip }: { onSkip: () => void }) {
 }
 
 function NextFab({ experienceStyle, isLastStep, onPress, pulse }: { experienceStyle: ExperienceStyle; isLastStep: boolean; onPress: () => void; pulse: number }) {
+  const reskin = experienceStyle === "reskin";
+  const label = isLastStep ? "FINISH" : "NEXT";
+  // Right-align to the same edge as the former square FAB (right: 20).
+  const top = reskin ? 757 : 747;
+
   return (
     <motion.button
       type="button"
-      aria-label={isLastStep ? "Finish" : "Next"}
+      aria-label={label}
       onClick={onPress}
       whileTap={{ scale: 0.94 }}
       style={{
         position: "absolute",
-        left: experienceStyle === "reskin" ? 317 : 320,
-        top: experienceStyle === "reskin" ? 757 : 747,
-        width: 56,
+        right: 20,
+        top,
+        width: 140,
         height: 56,
-        borderRadius: 16,
+        borderRadius: 100,
         background: "var(--color-blue-700)",
         color: "#fff",
         border: "none",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        gap: 8,
         cursor: "pointer",
         boxShadow: "0 1px 2px rgba(16,24,40,0.05)",
         zIndex: 6,
@@ -311,13 +317,24 @@ function NextFab({ experienceStyle, isLastStep, onPress, pulse }: { experienceSt
           style={{
             position: "absolute",
             inset: -3,
-            borderRadius: 19,
+            borderRadius: 103,
             border: "2px solid var(--color-blue-700)",
             pointerEvents: "none",
           }}
         />
       )}
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+      <span
+        style={{
+          fontFamily: "var(--font-family-base)",
+          fontWeight: 700,
+          fontSize: 14,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </span>
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
         <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </motion.button>

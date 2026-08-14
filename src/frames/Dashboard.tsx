@@ -1,9 +1,8 @@
-import dashboardAllV1 from "../assets/exports/dashboard-allv1.png";
-import dashboardAllV2 from "../assets/exports/dashboard-allv2.png";
+import dashboardAll from "../assets/exports/dashboard-all.png";
 import dashboardFooter from "../assets/exports/dashboard-footer.png";
 import type { ExperienceStyle } from "../experienceStyle";
 
-const DASHBOARD_HEIGHT = 1554;
+const DASHBOARD_HEIGHT = 1691;
 const FOOTER_HEIGHT = 90;
 const SCROLLING_CONTENT_HEIGHT = DASHBOARD_HEIGHT - FOOTER_HEIGHT;
 
@@ -15,8 +14,7 @@ const SCROLLING_CONTENT_HEIGHT = DASHBOARD_HEIGHT - FOOTER_HEIGHT;
 // viewport, because it is the whole scrollable dashboard rather than one
 // screenful. The dashboard owns its vertical scroll viewport while the
 // DeviceFrame continues to clip the app to the phone silhouette.
-export function Dashboard({ experienceStyle, onRetakeTour }: { experienceStyle: ExperienceStyle; onRetakeTour: () => void }) {
-  const dashboardAll = experienceStyle === "reskin" ? dashboardAllV1 : dashboardAllV2;
+export function Dashboard({ experienceStyle: _experienceStyle, onRetakeTour }: { experienceStyle: ExperienceStyle; onRetakeTour: () => void }) {
 
   return (
     <div
@@ -51,7 +49,7 @@ export function Dashboard({ experienceStyle, onRetakeTour }: { experienceStyle: 
             style={{
               position: "absolute",
               left: 16,
-              top: 536,
+              top: 1334,
               width: 361,
               height: 101,
               padding: 0,

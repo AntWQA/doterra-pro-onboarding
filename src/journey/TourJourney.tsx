@@ -43,12 +43,14 @@ const SEPARATION_PAUSE_MS = 200;
 // `exit` on a wrapper would never reach the individual elements.
 export function TourJourney({
   experienceStyle,
+  guestTour = false,
   stepIndex,
   onNext,
   onNavigate,
   onSkip,
 }: {
   experienceStyle: ExperienceStyle;
+  guestTour?: boolean;
   stepIndex: number;
   onNext: () => void;
   onNavigate: (stepIndex: number) => void;
@@ -95,7 +97,7 @@ export function TourJourney({
       onNext={onNext}
       onNavigate={onNavigate}
       onSkip={onSkip}
-      stage={<Stage key={shown} exiting={exiting} experienceStyle={experienceStyle} />}
+      stage={<Stage key={shown} exiting={exiting} experienceStyle={experienceStyle} guestTour={guestTour} />}
     />
   );
 }

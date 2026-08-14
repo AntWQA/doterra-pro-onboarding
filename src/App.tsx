@@ -5,6 +5,7 @@ import { MeshGradientBackground } from "./ui/MeshGradientBackground";
 import { Wordmark } from "./ui/Wordmark";
 import { SystemBar } from "./ui/SystemBar";
 import { Frame1Splash } from "./frames/Frame1Splash";
+import { SplashIntro } from "./frames/SplashIntro";
 import { Frame2Login } from "./frames/Frame2Login";
 import { Frame3Loading } from "./frames/Frame3Loading";
 import { TourJourney } from "./journey/TourJourney";
@@ -45,6 +46,13 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
   const [collapsing, setCollapsing] = useState(false);
   const [contained, setContained] = useState(false);
   const [wordmarkUp, setWordmarkUp] = useState(false);
+  const [backgroundFading, setBackgroundFading] = useState(false);
+  const [isGuestTour, setIsGuestTour] = useState(false);
+  // V3 opens on the animated intro. Frame 1 is held back until the mark has
+  // cleared the viewport, so the card never animates in behind it. The other
+  // two versions have no intro and start past this gate.
+  const [introDone, setIntroDone] = useState(experienceStyle !== "hybrid");
+  const [introRevealing, setIntroRevealing] = useState(experienceStyle !== "hybrid");
   const timers = useRef<number[]>([]);
 
   const enterWelcome = useCallback(() => {
@@ -56,12 +64,23 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
     );
   }, [collapsing, dispatch]);
 
+  const startGuestTour = useCallback(() => {
+    setIsGuestTour(true);
+    enterWelcome();
+  }, [enterWelcome]);
+
+  const completeTourLogin = useCallback(() => {
+    setSwiped(true);
+    setTimeout(() => dispatch({ type: "SKIP" }), 500);
+  }, [dispatch]);
+
   const enterLogin = useCallback(() => {
     if (experienceStyle === "original") {
       dispatch({ type: "GO_LOGIN" });
       return;
     }
     if (collapsing) return;
+    // hybrid shares V1's collapse-then-navigate behaviour
     setCollapsing(true);
     timers.current.push(
       window.setTimeout(() => {
@@ -71,18 +90,32 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
     );
   }, [collapsing, dispatch, experienceStyle]);
 
-  const onWordmarkSettled = useCallback(() => setWordmarkUp(true), []);
+  const onWordmarkSettled = useCallback(() => {
+    setWordmarkUp(true);
+    if (experienceStyle === "hybrid") setBackgroundFading(true);
+  }, [experienceStyle]);
 
   const finishTour = () => {
-    // "Final Page Transition": the entire onboarding page swipes left as a
-    // single unit, exposing the app beneath — not a fade to a placeholder.
-    setSwiped(true);
-    setTimeout(() => dispatch({ type: "SKIP" }), 500);
+    if (isGuestTour) {
+      // Guest path: send back to login rather than exposing the dashboard.
+      // Reset background and collapsing so the login card enters cleanly.
+      setCollapsing(false);
+      setContained(false);
+      setBackgroundFading(false);
+      dispatch({ type: "GO_LOGIN" });
+    } else {
+      // "Final Page Transition": the entire onboarding page swipes left as a
+      // single unit, exposing the app beneath — not a fade to a placeholder.
+      setSwiped(true);
+      setTimeout(() => dispatch({ type: "SKIP" }), 500);
+    }
   };
 
   const restartTour = () => {
+    setIsGuestTour(false);
     setContained(true);
     setWordmarkUp(true);
+    setBackgroundFading(false);
     setSwiped(false);
     dispatch({ type: "RESTART_TOUR" });
   };
@@ -108,32 +141,42 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
               position: "absolute",
               inset: 0,
               zIndex: 1,
-              background: experienceStyle === "original" ? "#ffffff" : "transparent",
+              background: experienceStyle === "reskin" ? "transparent" : "#ffffff",
             }}
           >
             {/* One persistent gradient surface for every onboarding screen:
                 full-bleed for Frames 1-2, closed in to the 381x530 block from
                 Frame 3 onwards. Screens on top of it must leave their own
                 backgrounds transparent. */}
-            <MeshGradientBackground contained={contained} experienceStyle={experienceStyle} />
+            <MeshGradientBackground
+              contained={contained}
+              faded={experienceStyle === "hybrid" && (backgroundFading || state.phase === "tour")}
+              experienceStyle={experienceStyle}
+            />
 
             <AnimatePresence mode="wait">
-              {state.phase === "splash" && (
+              {state.phase === "splash" && introDone && (
                 <Frame1Splash
                   key="splash"
                   experienceStyle={experienceStyle}
                   collapsing={collapsing}
                   onLogin={enterLogin}
-                  onTour={enterWelcome}
+                  onTour={startGuestTour}
                 />
               )}
               {state.phase === "login" && (
-                <Frame2Login key="login" experienceStyle={experienceStyle} collapsing={collapsing} onLogin={enterWelcome} />
+                <Frame2Login
+                  key="login"
+                  experienceStyle={experienceStyle}
+                  collapsing={collapsing}
+                  onLogin={isGuestTour ? completeTourLogin : enterWelcome}
+                />
               )}
               {state.phase === "loading" && (
                 <Frame3Loading
                   key="loading"
                   experienceStyle={experienceStyle}
+                  guestTour={isGuestTour}
                   onDone={() => dispatch({ type: "LOADING_DONE" })}
                   onSettled={onWordmarkSettled}
                 />
@@ -142,6 +185,7 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
                 <TourJourney
                   key="tour"
                   experienceStyle={experienceStyle}
+                  guestTour={isGuestTour}
                   stepIndex={state.stepIndex}
                   onNext={state.stepIndex >= 4 ? finishTour : () => dispatch({ type: "NEXT" })}
                   onNavigate={(stepIndex) => dispatch({ type: "GO_TO_STEP", stepIndex })}
@@ -156,12 +200,28 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
                 changes nothing about it. Rendered last so it sits above the
                 stage, matching the z-index it had inside TourChrome. */}
             {state.phase === "loading" && <Wordmark experienceStyle={experienceStyle} settled={wordmarkUp} />}
+
+            {/* Above everything in the overlay: the intro's pale surface has
+                to cover the background it will later reveal through the Ō. */}
+            {!introDone && (
+              <SplashIntro
+                reduced={reduce}
+                onRevealStart={() => setIntroRevealing(true)}
+                onComplete={() => setIntroDone(true)}
+              />
+            )}
           </motion.div>
         </TourRoot>
 
         {/* Native chrome is deliberately outside every animated page layer:
             it stays fixed while onboarding screens and the dashboard move. */}
-        <SystemBar light={experienceStyle === "reskin" && state.phase !== "handoff"} />
+        <SystemBar
+          light={
+            (experienceStyle === "reskin" || experienceStyle === "hybrid") &&
+            state.phase !== "handoff" &&
+            introRevealing
+          }
+        />
       </DeviceFrame>
     </MotionConfig>
   );
@@ -170,7 +230,7 @@ function Prototype({ experienceStyle }: { experienceStyle: ExperienceStyle }) {
 function StyleToggle({ value, onChange }: { value: ExperienceStyle; onChange: (value: ExperienceStyle) => void }) {
   return (
     <div className="style-toggle" role="group" aria-label="Prototype style">
-      {(["reskin", "original"] as const).map((option) => (
+      {(["reskin", "original", "hybrid"] as const).map((option) => (
         <button
           key={option}
           type="button"
@@ -178,7 +238,7 @@ function StyleToggle({ value, onChange }: { value: ExperienceStyle; onChange: (v
           onClick={() => onChange(option)}
           className={value === option ? "style-toggle__option style-toggle__option--active" : "style-toggle__option"}
         >
-          {option === "original" ? "V2" : "V1"}
+          {option === "original" ? "V2" : option === "hybrid" ? "V3" : "V1"}
         </button>
       ))}
     </div>

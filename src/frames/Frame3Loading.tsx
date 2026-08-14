@@ -24,7 +24,7 @@ const HANDOFF_MS = 400;
 // the time this mounts, and the white page is the overlay it sits on. That
 // also removes a blink this frame used to cause, fading its own copy of the
 // block out at the end of loading only for the tour to fade another one in.
-export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experienceStyle: ExperienceStyle; onDone: () => void; onSettled: () => void }) {
+export function Frame3Loading({ experienceStyle, guestTour = false, onDone, onSettled }: { experienceStyle: ExperienceStyle; guestTour?: boolean; onDone: () => void; onSettled: () => void }) {
   const [settled, setSettled] = useState(false);
   const reskin = experienceStyle === "reskin";
 
@@ -72,7 +72,7 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
         }}
       >
         <span>Welcome,</span>
-        <span>Emma</span>
+        <span>{guestTour ? "Member" : "Emma"}</span>
       </motion.div>
 
       {/* Skeleton bars are top-level siblings of the stage box in Figma

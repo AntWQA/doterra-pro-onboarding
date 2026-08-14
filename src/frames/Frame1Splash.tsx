@@ -9,7 +9,7 @@ import type { ExperienceStyle } from "../experienceStyle";
 // Reskinned splash: lavender photography remains visible above a full-width
 // bottom sheet. The existing card entrance/collapse choreography is retained.
 export function Frame1Splash({ experienceStyle, collapsing, onLogin, onTour }: { experienceStyle: ExperienceStyle; collapsing: boolean; onLogin: () => void; onTour: () => void }) {
-  const reskin = experienceStyle === "reskin";
+  const reskin = experienceStyle === "reskin" || experienceStyle === "hybrid";
   return (
     <div style={{ position: "relative", height: "100%" }}>
       <motion.div
