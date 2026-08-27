@@ -16,12 +16,12 @@ import type { ExperienceStyle } from "../experienceStyle";
 //           box-shadow spread.
 //   ends    fully rounded, on the track and on the fill.
 //
-// Only the geometry differs between styles. V1 keeps its own position and
-// 216px width inside the bottom sheet; it takes the new 10px height because
-// that IS the visual change, and at 10px its centre (102.5) also lines up
-// with the Skip link beside it (101.75) far better than 4.17px did.
+// Only the geometry differs between styles. V1 sits in the "progress + action"
+// row the loading screen (17034:7145) and the tour (16923:10998) share: the
+// row starts at y81 and is 21px tall, and the 10px bar is centred in it, which
+// is also what lines it up with the Skip link beside it.
 const GEOMETRY = {
-  reskin: { left: 20, top: 97.5, width: 216, height: 10 },
+  reskin: { left: 24, top: 86, width: 168, height: 10 },
   original: { left: 22, top: 70.5, width: 172, height: 10 },
   hybrid: { left: 22, top: 70.5, width: 172, height: 10 },
 } as const;

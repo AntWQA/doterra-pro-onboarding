@@ -58,9 +58,13 @@ export function Frame3Loading({ experienceStyle, guestTour = false, onDone, onSe
         transition={copyReveal}
         style={{
           position: "absolute",
-          left: reskin ? 32 : 25,
+          // V1 bottom-anchors the greeting to the foot of the upper block
+          // (17034:7145 puts its box at y443-475, above the block's 32px
+          // bottom padding), so it reads as the last thing in the gradient
+          // rather than floating near the screen edge.
+          left: reskin ? 24 : 25,
           top: reskin ? undefined : 406,
-          bottom: reskin ? 48 : undefined,
+          bottom: reskin ? 377 : undefined,
           display: "flex",
           flexDirection: "column",
           gap: 12,
@@ -81,9 +85,11 @@ export function Frame3Loading({ experienceStyle, guestTour = false, onDone, onSe
       <motion.div animate={{ opacity: settled ? 0 : 1 }} transition={{ duration: 0.3 }}>
         {reskin ? (
           <>
-            <Skeleton left={20} top={162} width={154} height={14} />
-            <Skeleton left={20} top={190} width={288} height={35} />
-            <Skeleton left={20} top={241} width={353} height={70} />
+            {/* The lower block of the sheet, on the same 24px gutter and 32px
+                top padding as the tour's copy, stacked with a 16px gap. */}
+            <Skeleton left={24} top={539} width={154} height={14} />
+            <Skeleton left={24} top={569} width={288} height={35} />
+            <Skeleton left={24} top={620} width={328} height={70} />
           </>
         ) : (
           <>

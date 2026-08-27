@@ -22,7 +22,11 @@ import type { ExperienceStyle } from "../experienceStyle";
 // App stops mounting it once the tour begins. RESTING_Y is kept only as the
 // target that upward travel aims at while the fade completes.
 const CENTRED_Y = 201.36;
-const RESKIN_CENTRED_Y = 426;
+// V1 sits it in the open gradient area, centred between the progress row that
+// caps it (ending at y96) and the greeting that now bottom-anchors the block
+// (starting at y390). It used to sit at 426, dead centre of the screen, which
+// is where the greeting moved to when the loading screen was relaid out.
+const RESKIN_CENTRED_Y = 243;
 const RESTING_Y = 86;
 
 export function Wordmark({ experienceStyle, settled }: { experienceStyle: ExperienceStyle; settled: boolean }) {

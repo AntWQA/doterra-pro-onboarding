@@ -4,15 +4,32 @@ import { copyReveal } from "../motion/transitions";
 import { PaginationDashes } from "./PaginationIndicator";
 import type { ExperienceStyle } from "../experienceStyle";
 
-// The stage state machines remain authored in the original 381px coordinate
-// space. These wrappers move each intact animation into the reskin's lower
-// demo region without changing its internal entrance/exit values.
+// Layout from node 16923:10998: the white sheet is one 799px overlay resting at
+// y53, split into a 454px block holding the progress row and the stage window,
+// and a 345px block holding the copy and the FAB. The stage sits ABOVE the
+// copy, not below it.
+const SHEET_TOP = 53;
+const PROGRESS_ROW_TOP = SHEET_TOP + 28; // the block's own 28px top padding
+// "image space": bottom-anchored inside the upper block, so it ends where the
+// copy block begins.
+const STAGE_WINDOW = { top: 106, height: 401 } as const;
+const COPY_TOP = STAGE_WINDOW.top + STAGE_WINDOW.height + 32; // 32px block padding
+
+// The stage state machines remain authored in their original 381x852 coordinate
+// space. These wrappers move each intact animation into the stage window
+// without changing its internal entrance/exit values, so `top` is where that
+// tall box starts relative to the window and is therefore negative.
+//
+// Each value centres that stage's settled content in the window. They are not
+// guesses: the content bounds were measured in the running app, per stage,
+// after its entrance had played out (heights 350, 369, 406, 381 and 263), and
+// the offsets fall out of centring those in 401px.
 const STAGE_LAYOUTS = [
-  { left: 0, top: 252, scale: 1 },
-  { left: 6, top: 280, scale: 1 },
-  { left: 6, top: 289, scale: 1 },
-  { left: 6, top: 258, scale: 1 },
-  { left: 6, top: 277, scale: 1 },
+  { left: 0, top: -117, scale: 1 },
+  { left: 6, top: -107, scale: 1 },
+  { left: 6, top: -119, scale: 1 },
+  { left: 6, top: -140, scale: 1 },
+  { left: 6, top: -101, scale: 1 },
 ] as const;
 
 // Shared chrome across Frames 4-8: progress + Skip at the top of the white
@@ -120,22 +137,55 @@ export function TourChrome({
     >
       {reskin ? (
         <>
-          <div style={{ position: "absolute", top: 93, right: 22, zIndex: 5 }}>
+          {/* Skip and the progress bar share one 21px row; the bar is centred
+              in it by PaginationIndicator's own geometry. */}
+          <div style={{ position: "absolute", top: PROGRESS_ROW_TOP, right: 24, zIndex: 5 }}>
             <SkipButton onSkip={onSkip} />
           </div>
+          {/* The stage window clips: the stages are taller than the space the
+              design gives them, and they now sit close to the status bar. */}
           <div
             style={{
               position: "absolute",
-              left: stageLayout.left,
-              top: stageLayout.top,
-              width: 381,
-              height: 852,
+              left: 0,
+              top: STAGE_WINDOW.top,
+              width: 393,
+              height: STAGE_WINDOW.height,
+              overflow: "hidden",
               zIndex: 1,
-              transform: `scale(${stageLayout.scale})`,
-              transformOrigin: "0 0",
             }}
           >
-            {stage}
+            <div
+              style={{
+                position: "absolute",
+                left: stageLayout.left,
+                top: stageLayout.top,
+                width: 381,
+                height: 852,
+                transform: `scale(${stageLayout.scale})`,
+                transformOrigin: "0 0",
+              }}
+            >
+              {stage}
+            </div>
+
+            {/* My Team's roster carries on past the foot of the window, so it
+                fades into the sheet instead of meeting the clip as a cut row. */}
+            {shownStepIndex === 3 && (
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: 0,
+                  width: 393,
+                  height: 96,
+                  zIndex: 2,
+                  pointerEvents: "none",
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0), #ffffff 70%)",
+                }}
+              />
+            )}
           </div>
         </>
       ) : (
@@ -147,22 +197,6 @@ export function TourChrome({
             {stage}
           </div>
         </div>
-      )}
-
-      {reskin && shownStepIndex === 3 && (
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 731,
-            width: 393,
-            height: 121,
-            zIndex: 2,
-            pointerEvents: "none",
-            background: "linear-gradient(to bottom, rgba(255,255,255,0), #ffffff 55%)",
-          }}
-        />
       )}
 
       {/* "Copy Reveal": headline and supporting description fade in together
@@ -177,9 +211,9 @@ export function TourChrome({
         transition={copyExiting ? { ...copyReveal, delay: copyExitDelayMs / 1000 } : copyReveal}
         style={{
           position: "absolute",
-          left: reskin ? 20 : 6,
-          top: reskin ? 162 : 556,
-          width: reskin ? 353 : 381,
+          left: reskin ? 24 : 6,
+          top: reskin ? COPY_TOP : 556,
+          width: reskin ? 345 : 381,
           boxSizing: "border-box",
           padding: reskin ? 0 : "0 16px",
           display: "flex",
@@ -279,8 +313,9 @@ function SkipButton({ onSkip }: { onSkip: () => void }) {
 function NextFab({ experienceStyle, isLastStep, onPress, pulse }: { experienceStyle: ExperienceStyle; isLastStep: boolean; onPress: () => void; pulse: number }) {
   const reskin = experienceStyle === "reskin";
   const label = isLastStep ? "FINISH" : "NEXT";
-  // Right-align to the same edge as the former square FAB (right: 20).
-  const top = reskin ? 757 : 747;
+  // Right-align to the same edge as the former square FAB (right: 20). The
+  // reskin follows the copy block's own 24px padding instead.
+  const top = reskin ? 764 : 747;
 
   return (
     <motion.button
@@ -290,7 +325,7 @@ function NextFab({ experienceStyle, isLastStep, onPress, pulse }: { experienceSt
       whileTap={{ scale: 0.94 }}
       style={{
         position: "absolute",
-        right: 20,
+        right: reskin ? 24 : 20,
         top,
         width: 140,
         height: 56,
