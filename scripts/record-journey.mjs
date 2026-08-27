@@ -1,13 +1,14 @@
 /**
- * Records the onboarding journey end to end, one video per experience style.
+ * Records the onboarding journey end to end, one video per version.
  *
  * Boots the Vite dev server, drives the prototype with Playwright at a pace
  * that leaves every transition legible, and writes a video per style to
  * recordings/. Playwright captures .webm; if its bundled ffmpeg is present the
  * script also writes an .mp4 alongside it for sharing.
  *
- *   node scripts/record-journey.mjs              # both styles
- *   node scripts/record-journey.mjs v1           # one style
+ *   node scripts/record-journey.mjs              # both versions, intro only
+ *   node scripts/record-journey.mjs v1           # one version
+ *   node scripts/record-journey.mjs --full       # carry on through the whole journey
  *   node scripts/record-journey.mjs --pace 1.5   # 1.5x slower, for reviewing motion
  */
 import { spawn, spawnSync } from "node:child_process";
@@ -35,12 +36,12 @@ const VIEWPORT = {
   height: (FRAME.height + MARGIN * 2) * RENDER_SCALE,
 };
 // Injected before the app's first paint, so the video never opens on an
-// unstaged flash. The page starts transparent and is revealed once the style is
-// selected — recording starts with the context, and the style toggle is a dev
-// control that should not appear in the film. Blanking uses opacity rather than
+// unstaged flash. The page starts transparent and is revealed once the version
+// is selected — recording starts with the context, and the demo controls are
+// dev chrome that should not appear in the film. Blanking uses opacity rather than
 // visibility so Playwright still counts the controls as clickable underneath.
 const STAGE_CSS = `
-  .style-toggle { display: none !important; }
+  .demo-controls { display: none !important; }
   #root {
     display: block !important;
     min-height: 0 !important;
@@ -74,23 +75,27 @@ const SETTLE = {
 // TourJourney holds a 200ms gap between one stage leaving and the next mounting.
 const STAGE_SEPARATION_MS = 200;
 
-// Switching the toggle remounts the whole journey, which resets it to the
-// opening splash. Both styles therefore end on a toggle press, so both videos
-// open on a splash entrance that starts from its first frame — V1 is selected
-// by default, so it goes out to V2 and back.
-// guest:true records the unauthenticated path (Take a Tour First → tour → login).
+// Pressing a version button always remounts the journey and replays the
+// animated splash intro, including when that version is already selected. Both
+// videos therefore start with a press, so both open on the intro's first frame
+// — which is the whole difference between the two versions.
 const STYLES = {
-  v1: { key: "v1", toggles: ["V2", "V1"], label: "V1 (reskin)" },
-  v2: { key: "v2", toggles: ["V2"], label: "V2 (original)" },
-  v3: { key: "v3-guest", toggles: ["V3"], label: "V3 (hybrid) – guest tour", guest: true },
-  v3auth: { key: "v3-auth", toggles: ["V3"], label: "V3 (hybrid) – authenticated" },
+  v1: {
+    key: "v1",
+    toggles: ["V1"],
+    label: "V1 (pale lead-in, counter reveal)",
+  },
+  v2: { key: "v2", toggles: ["V2"], label: "V2 (photo backdrop, drop ending)" },
 };
 
 const args = process.argv.slice(2);
 const paceFlag = args.indexOf("--pace");
 const PACE = paceFlag === -1 ? 1 : Number(args[paceFlag + 1]) || 1;
+// By default the film stops once the splash card has landed — that is where
+// the two versions differ, and the rest of the journey is identical in both.
+const FULL_JOURNEY = args.includes("--full");
 const requested = args.filter((a) => STYLES[a.toLowerCase()]).map((a) => a.toLowerCase());
-const targets = (requested.length ? requested : ["v1", "v2", "v3"]).map((k) => STYLES[k]);
+const targets = (requested.length ? requested : ["v1", "v2"]).map((k) => STYLES[k]);
 
 const hold = (page, ms) => page.waitForTimeout(Math.round(ms * PACE));
 
@@ -164,7 +169,7 @@ async function recordStyle(browser, style, timings) {
   await page.getByRole("button", { name: "Take a Tour First" }).waitFor();
   for (const label of style.toggles) {
     await page.evaluate((name) => {
-      const button = [...document.querySelectorAll(".style-toggle button")].find(
+      const button = [...document.querySelectorAll(".version-toggle button")].find(
         (b) => b.textContent.trim() === name,
       );
       button?.click();
@@ -172,34 +177,12 @@ async function recordStyle(browser, style, timings) {
   }
   await page.addStyleTag({ content: REVEAL_CSS });
 
-  if (style.guest) {
-    // Guest (unauthenticated) path: Take a Tour First → loading → tour → login.
-    await page.getByRole("button", { name: "Take a Tour First" }).waitFor();
-    await hold(page, SETTLE.splash + READ.splash);
-    await page.getByRole("button", { name: "Take a Tour First" }).click();
+  // Frame 1 — splash. Waiting on the CTA is what proves the intro has finished
+  // and the card has mounted; the hold covers its entrance plus reading time.
+  await page.getByRole("button", { name: "Take a Tour First" }).waitFor();
+  await hold(page, SETTLE.splash + READ.splash);
 
-    // Frame 3 — loading with "Member" copy (self-timed; FAB appears when done).
-    await page.getByRole("button", { name: "NEXT" }).waitFor({ timeout: 20_000 });
-
-    // Frames 4-8 — same timing contract as authenticated.
-    for (let step = 0; step < timings.length; step += 1) {
-      const isLast = step === timings.length - 1;
-      const fab = page.getByRole("button", { name: isLast ? "FINISH" : "NEXT" });
-      await fab.waitFor();
-      const previousExit = step === 0 ? 0 : timings[step - 1].exitMs + STAGE_SEPARATION_MS;
-      await hold(page, previousExit + timings[step].entranceMs + READ.tourStep);
-      await fab.click();
-    }
-
-    // After finishing the tour the guest path lands on the login screen.
-    await page.getByRole("button", { name: "Use Face ID" }).waitFor({ timeout: 10_000 });
-    await hold(page, SETTLE.login + READ.login);
-  } else {
-    // Authenticated path.
-
-    // Frame 1 — splash
-    await page.getByRole("button", { name: "Take a Tour First" }).waitFor();
-    await hold(page, SETTLE.splash + READ.splash);
+  if (FULL_JOURNEY) {
     await page.getByRole("button", { name: "Log in", exact: true }).click();
 
     // Frame 2 — login. Waiting on Face ID confirms the frame has mounted before
@@ -220,7 +203,9 @@ async function recordStyle(browser, style, timings) {
     // labelled "FINISH".
     for (let step = 0; step < timings.length; step += 1) {
       const isLast = step === timings.length - 1;
-      const fab = page.getByRole("button", { name: isLast ? "FINISH" : "NEXT" });
+      const fab = page.getByRole("button", {
+        name: isLast ? "FINISH" : "NEXT",
+      });
       await fab.waitFor();
       const previousExit = step === 0 ? 0 : timings[step - 1].exitMs + STAGE_SEPARATION_MS;
       await hold(page, previousExit + timings[step].entranceMs + READ.tourStep);
@@ -269,13 +254,17 @@ const browser = await chromium.launch();
 const written = [];
 try {
   // One un-recorded page, purely to read the stage timings out of the app.
-  const probe = await browser.newPage();
-  await probe.goto(BASE_URL, { waitUntil: "networkidle" });
-  const timings = await readStageTimings(probe);
-  await probe.close();
-  console.log(
-    `Stage timings (ms): ${timings.map((t, i) => `F${i + 4} in ${t.entranceMs}/out ${t.exitMs}`).join(", ")}`,
-  );
+  // Only the full journey plays the tour, so only it needs them.
+  let timings = [];
+  if (FULL_JOURNEY) {
+    const probe = await browser.newPage();
+    await probe.goto(BASE_URL, { waitUntil: "networkidle" });
+    timings = await readStageTimings(probe);
+    await probe.close();
+    console.log(
+      `Stage timings (ms): ${timings.map((t, i) => `F${i + 4} in ${t.entranceMs}/out ${t.exitMs}`).join(", ")}`,
+    );
+  }
 
   for (const style of targets) {
     console.log(`Recording ${style.label}…`);
