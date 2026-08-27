@@ -65,10 +65,14 @@ const COVER_SCALE = DEVICE_HEIGHT / COMP_HEIGHT;
 const COVER_WIDTH = COMP_WIDTH * COVER_SCALE;
 const COVER_OFFSET_X = (DEVICE_WIDTH - COVER_WIDTH) / 2;
 
-// Pale lead-in. Derived from the lavender photograph itself (mean #d2d0ea)
-// lifted towards white, so the opening frame reads as the same world the
-// background belongs to rather than a neutral grey card.
-const PALE = "#efedf7";
+// Lead-in surface. Taken from the "Splash Load" frame in Figma (node
+// 7883:2947): a vertical gradient from lavender at the top, through an almost
+// white band at 23%, down to a pale blue at the foot — not a flat fill.
+const LEAD_IN_STOPS = [
+  { offset: "0%", color: "#d8d8f1" },
+  { offset: "23.077%", color: "#f1f1f9" },
+  { offset: "100%", color: "#e5eff9" },
+] as const;
 
 // ---------------------------------------------------------------------------
 // Timing
@@ -80,6 +84,45 @@ const PALE = "#efedf7";
 // stretched, not re-keyed, so the segment keeps its authored easing.
 const BUILD_MS = (BUILD_END_FRAME / FRAME_RATE) * 1000;
 const REVEAL_MS = 950;
+
+// V2's ending is not the expansion at all. The mark settles at its resting
+// size (32.77%, held between frames 75 and 94 — frames 94-102 are the shrink
+// that sets up the blow-up, and reading as a shrink before a fall is wrong),
+// gathers itself with a short lift, then falls off the bottom of the screen.
+const DROP_HOLD_FRAME = 94;
+const DROP_BUILD_MS = (DROP_HOLD_FRAME / FRAME_RATE) * 1000;
+const LIFT_PX = 26;
+const LIFT_MS = 220;
+const DROP_PX = 900; // comfortably past the bottom edge from centre screen
+const DROP_MS = 400;
+const DROP_EASE_POWER = 2.2;
+// Once the mark is this far down it has cleared the viewport, so the splash
+// card is free to pop up over what is now an empty screen — the two overlap
+// exactly as the card and the expansion used to.
+const DROP_CLEAR_PX = 520;
+// When that happens, in milliseconds — the drop curve inverted. The progress
+// bar needs it so it finishes exactly as the intro hands over rather than
+// stopping short of full.
+const DROP_CLEAR_T = Math.pow((DROP_CLEAR_PX + LIFT_PX) / (DROP_PX + LIFT_PX), 1 / DROP_EASE_POWER);
+const DROP_TOTAL_MS = DROP_BUILD_MS + LIFT_MS + DROP_CLEAR_T * DROP_MS;
+
+// ---------------------------------------------------------------------------
+// Loading bar
+// ---------------------------------------------------------------------------
+
+// Straight from the "Splash Load" frame (node 7883:2947): same track, fill and
+// geometry the storyboard shows under the wordmark on every intro frame. It
+// runs the length of the intro, so it is a real progress bar rather than an
+// indeterminate one.
+const BAR = {
+  left: 25.23,
+  top: 775.57,
+  width: 324.548,
+  height: 8.182,
+  radius: 4.091,
+  track: "#c8def6",
+  fill: "#0067dc",
+} as const;
 
 // Stretching the segment evenly is not enough on its own. The mark travels
 // 27% -> 669%, so almost all of its screen coverage arrives at the very end,
@@ -145,38 +188,39 @@ function counterTransform(scale: number) {
 
 export function SplashIntro({
   onComplete,
-  onRevealStart,
   reduced,
+  backdrop = "lead-in",
 }: {
   onComplete: () => void;
-  /**
-   * Fired as the expansion begins. The status bar rides on this: white icons
-   * are invisible against the pale lead-in, so they stay dark until the mark's
-   * ink takes the top of the screen — after which the ink, and then the
-   * lavender behind it, both want light.
-   */
-  onRevealStart: () => void;
   reduced: boolean;
+  /**
+   * "lead-in" (V1) opens on the pale gradient surface and reveals the lavender
+   * background through the Ō's counter. "photo" (V2) drops that surface
+   * altogether: the lavender macro photograph is simply there from the first
+   * frame and stays put, with the mark building and expanding on top of it.
+   * With nothing to reveal, the counter mask has no work to do either.
+   */
+  backdrop?: "lead-in" | "photo";
 }) {
+  const overPhoto = backdrop === "photo";
   const stageRef = useRef<HTMLDivElement>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const holeRef = useRef<SVGPathElement>(null);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
-  const onRevealStartRef = useRef(onRevealStart);
-  onRevealStartRef.current = onRevealStart;
 
   useEffect(() => {
     // Reduced motion gets the destination, not the journey: no build, no
     // expansion, just the splash it was on its way to.
     if (reduced) {
-      onRevealStartRef.current();
       onCompleteRef.current();
       return;
     }
 
     const container = stageRef.current;
     const hole = holeRef.current;
-    if (!container || !hole) return;
+    if (!container || (!hole && !overPhoto)) return;
 
     const animation: AnimationItem = lottie.loadAnimation({
       container,
@@ -190,11 +234,51 @@ export function SplashIntro({
     let raf = 0;
     let startedAt = 0;
     let done = false;
-    let revealAnnounced = false;
+
+    const drawDrop = (elapsed: number) => {
+      // The build is frozen at its resting frame; everything after this is our
+      // own motion on the stage, not the Lottie's.
+      animation.goToAndStop(Math.min(DROP_HOLD_FRAME, (elapsed / 1000) * FRAME_RATE), true);
+      if (elapsed < DROP_BUILD_MS) return false;
+
+      const since = elapsed - DROP_BUILD_MS;
+      let y: number;
+      if (since < LIFT_MS) {
+        // Anticipation: eases out into the top of the lift, so the mark looks
+        // like it is gathering rather than being yanked.
+        const t = since / LIFT_MS;
+        y = -LIFT_PX * (1 - Math.pow(1 - t, 2));
+      } else {
+        // The fall accelerates; it should feel dropped, not animated down.
+        const t = Math.min(1, (since - LIFT_MS) / DROP_MS);
+        y = -LIFT_PX + (DROP_PX + LIFT_PX) * Math.pow(t, DROP_EASE_POWER);
+      }
+
+      if (dropRef.current) dropRef.current.style.transform = `translateY(${y}px)`;
+      return y >= DROP_CLEAR_PX;
+    };
+
+    const totalMs = overPhoto ? DROP_TOTAL_MS : BUILD_MS + REVEAL_MS;
 
     const draw = (now: number) => {
       if (!startedAt) startedAt = now;
       const elapsed = now - startedAt;
+
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${Math.min(1, elapsed / totalMs)})`;
+      }
+
+      if (overPhoto) {
+        if (drawDrop(elapsed)) {
+          if (!done) {
+            done = true;
+            onCompleteRef.current();
+          }
+          return;
+        }
+        raf = requestAnimationFrame(draw);
+        return;
+      }
 
       let frame: number;
       let revealProgress: number;
@@ -205,10 +289,6 @@ export function SplashIntro({
         revealProgress = Math.min(1, (elapsed - BUILD_MS) / REVEAL_MS);
         const warped = Math.pow(revealProgress, REVEAL_WARP);
         frame = BUILD_END_FRAME + warped * (FINAL_FRAME - BUILD_END_FRAME);
-        if (!revealAnnounced) {
-          revealAnnounced = true;
-          onRevealStartRef.current();
-        }
       }
 
       animation.goToAndStop(frame, true);
@@ -216,11 +296,13 @@ export function SplashIntro({
       // Attributes are written directly rather than through state: this runs
       // every frame, and a re-render per frame is a cost with nothing to show
       // for it.
-      hole.setAttribute("transform", counterTransform(scaleAtFrame(frame)));
-      hole.setAttribute(
-        "fill-opacity",
-        String(Math.min(1, revealProgress / HOLE_FADE_PORTION)),
-      );
+      if (hole) {
+        hole.setAttribute("transform", counterTransform(scaleAtFrame(frame)));
+        hole.setAttribute(
+          "fill-opacity",
+          String(Math.min(1, revealProgress / HOLE_FADE_PORTION)),
+        );
+      }
 
       if (revealProgress >= 1) {
         if (!done) {
@@ -238,7 +320,7 @@ export function SplashIntro({
       cancelAnimationFrame(raf);
       animation.destroy();
     };
-  }, [reduced]);
+  }, [reduced, overPhoto]);
 
   if (reduced) return null;
 
@@ -249,7 +331,9 @@ export function SplashIntro({
     >
       {/* Pale lead-in with the counter punched out of it. Whatever App has
           mounted underneath — the lavender background — is what shows through
-          the hole, which is the entire point of masking rather than fading. */}
+          the hole, which is the entire point of masking rather than fading.
+          V2 omits it entirely and lets that background stand on its own. */}
+      {!overPhoto && (
       <svg
         width={DEVICE_WIDTH}
         height={DEVICE_HEIGHT}
@@ -257,6 +341,11 @@ export function SplashIntro({
         style={{ position: "absolute", inset: 0, display: "block" }}
       >
         <defs>
+          <linearGradient id="splash-intro-lead-in" x1="0" y1="0" x2="0" y2={DEVICE_HEIGHT} gradientUnits="userSpaceOnUse">
+            {LEAD_IN_STOPS.map((stop) => (
+              <stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+            ))}
+          </linearGradient>
           <mask id="splash-intro-counter" maskUnits="userSpaceOnUse">
             <rect width={DEVICE_WIDTH} height={DEVICE_HEIGHT} fill="#ffffff" />
             <path ref={holeRef} d={COUNTER_PATH} fill="#000000" fillOpacity={0} />
@@ -265,24 +354,58 @@ export function SplashIntro({
         <rect
           width={DEVICE_WIDTH}
           height={DEVICE_HEIGHT}
-          fill={PALE}
+          fill="url(#splash-intro-lead-in)"
           mask="url(#splash-intro-counter)"
         />
       </svg>
+      )}
 
       {/* The mark itself, cover-fitted over the device box and drawn above the
-          pale so the ink stays solid while the counter opens beneath it. */}
+          pale so the ink stays solid while the counter opens beneath it. The
+          outer element exists only to carry V2's lift-and-drop, so that motion
+          never has to compose with the centring transform below it. */}
+      {/* Loading bar. Outside the drop wrapper on purpose: it belongs to the
+          screen, not to the mark, so V2's fall leaves it where it is. */}
       <div
-        ref={stageRef}
         style={{
           position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: COVER_WIDTH,
-          height: DEVICE_HEIGHT,
+          left: BAR.left,
+          top: BAR.top,
+          width: BAR.width,
+          height: BAR.height,
+          borderRadius: BAR.radius,
+          background: BAR.track,
+          overflow: "hidden",
+          zIndex: 1,
         }}
-      />
+      >
+        <div
+          ref={barRef}
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: BAR.radius,
+            background: BAR.fill,
+            transform: "scaleX(0)",
+            transformOrigin: "left center",
+            willChange: "transform",
+          }}
+        />
+      </div>
+
+      <div ref={dropRef} style={{ position: "absolute", inset: 0, willChange: "transform" }}>
+        <div
+          ref={stageRef}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: COVER_WIDTH,
+            height: DEVICE_HEIGHT,
+          }}
+        />
+      </div>
     </div>
   );
 }

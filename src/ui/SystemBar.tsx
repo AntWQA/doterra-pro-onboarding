@@ -2,11 +2,18 @@ import cap from "../assets/exports/status-cap.svg";
 import wifi from "../assets/exports/status-wifi.svg";
 import cellular from "../assets/exports/status-cellular.svg";
 
+// How long the bar takes to change between dark and light icons. Deliberately
+// unhurried: the flip used to be instant, which read as a glitch.
+const TINT_MS = 900;
+
 // Fixed native-style chrome from Figma node 16294:52261. This component is
 // mounted once above the whole app, so it never participates in page motion.
+//
+// The two tints are rendered as two full stacked copies and cross-faded rather
+// than transitioning colour and filter in place: `filter: none` -> `brightness(0)
+// invert(1)` has no sensible interpolation, and a half-inverted icon greys out
+// in the middle of the transition instead of passing through it.
 export function SystemBar({ light = false }: { light?: boolean }) {
-  const foreground = light ? "#ffffff" : "#282828";
-  const iconFilter = light ? "brightness(0) invert(1)" : "none";
   return (
     <div
       aria-hidden
@@ -19,6 +26,24 @@ export function SystemBar({ light = false }: { light?: boolean }) {
         zIndex: 1000,
         pointerEvents: "none",
         background: "rgba(255,255,255,0)",
+      }}
+    >
+      <SystemBarTint light={false} visible={!light} />
+      <SystemBarTint light visible={light} />
+    </div>
+  );
+}
+
+function SystemBarTint({ light, visible }: { light: boolean; visible: boolean }) {
+  const foreground = light ? "#ffffff" : "#282828";
+  const iconFilter = light ? "brightness(0) invert(1)" : "none";
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        opacity: visible ? 1 : 0,
+        transition: `opacity ${TINT_MS}ms ease-in-out`,
       }}
     >
       <div
