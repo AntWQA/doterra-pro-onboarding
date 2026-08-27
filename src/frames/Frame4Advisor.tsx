@@ -8,6 +8,7 @@ import proAdvisor3 from "../assets/exports/pro-advisor-3.png";
 import proAdvisor4 from "../assets/exports/pro-advisor-4.png";
 import bubbleImg from "../assets/exports/pro-advisor-2-bubble.png";
 import avatarImg from "../assets/exports/pro-advisor-2-avatar.png";
+import avatarGuestImg from "../assets/exports/avatar-guest.png";
 
 type Beat = "container" | "avatar" | "userTyping" | "bubble" | "thinking" | "response";
 
@@ -94,7 +95,7 @@ const exitWith = (order: number) => ({
 // between the conversation and the input field. This is the stage-only
 // content — chrome (Skip/FAB/dots/wordmark/headline) is owned by TourChrome,
 // rendered once by TourJourney rather than remounted per step.
-export function Frame4AdvisorStage({ exiting, experienceStyle }: StageProps) {
+export function Frame4AdvisorStage({ exiting, experienceStyle, guestTour = false }: StageProps) {
   const [beat, setBeat] = useState<Beat>("container");
 
   useEffect(() => {
@@ -151,7 +152,7 @@ export function Frame4AdvisorStage({ exiting, experienceStyle }: StageProps) {
 
         {/* Beat 2: Avatar Entrance — slide from right, rotate clockwise, fade in, bounce */}
         <motion.img
-          src={avatarImg}
+          src={guestTour ? avatarGuestImg : avatarImg}
           alt=""
           initial={{ opacity: 0, x: 40, rotate: -25 }}
           animate={exiting ? exitTo : avatarIn ? { opacity: 1, x: 0, rotate: 0 } : {}}

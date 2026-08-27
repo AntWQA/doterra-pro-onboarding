@@ -14,11 +14,17 @@ body {
   padding: var(--space-5, 32px) 0;
 }
 
-.style-toggle {
+.demo-controls {
   position: fixed;
   top: 64px;
   right: 16px;
   z-index: 5000;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.version-toggle {
   display: flex;
   gap: 3px;
   padding: 4px;
@@ -28,9 +34,9 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
 }
 
-.style-toggle__option {
-  min-width: 76px;
-  padding: 8px 12px;
+.version-toggle__option {
+  min-width: 44px;
+  padding: 6px 12px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -39,9 +45,28 @@ body {
   cursor: pointer;
 }
 
-.style-toggle__option--active {
+.version-toggle__option--active {
   background: #ffffff;
   color: var(--color-bluegray-900);
+}
+
+.refresh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(29, 41, 57, 0.88);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  color: rgba(255, 255, 255, 0.88);
+  font: 600 13px/16px var(--font-family-base);
+  cursor: pointer;
+}
+
+.refresh-button:hover {
+  color: #ffffff;
+  background: rgba(29, 41, 57, 1);
 }
 
 @keyframes shimmer-sweep {

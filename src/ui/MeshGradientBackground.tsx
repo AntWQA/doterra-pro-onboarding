@@ -14,11 +14,43 @@ const ORIGINAL_CONTAINED = { left: 6, top: 6, width: 381, height: 530, borderRad
 // loading and tour screens.
 export function MeshGradientBackground({
   contained,
+  faded = false,
   experienceStyle,
 }: {
   contained: boolean;
+  faded?: boolean;
   experienceStyle: ExperienceStyle;
 }) {
+  if (experienceStyle === "hybrid") {
+    return (
+      <motion.div
+        initial={false}
+        animate={contained ? ORIGINAL_CONTAINED : ORIGINAL_FULL_BLEED}
+        transition={{ duration: duration.bubble, ease: easing.easeInOut }}
+        style={{ position: "absolute", overflow: "hidden", background: "#edf4f8" }}
+      >
+        <motion.img
+          src={lavenderBackground}
+          alt=""
+          aria-hidden
+          initial={false}
+          animate={{ opacity: faded ? 0.22 : 1 }}
+          transition={{ duration: duration.bubble, ease: easing.easeInOut }}
+          draggable={false}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+            userSelect: "none",
+          }}
+        />
+      </motion.div>
+    );
+  }
+
   if (experienceStyle === "original") {
     return (
       <motion.div

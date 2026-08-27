@@ -1,19 +1,35 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, type PanInfo } from "motion/react";
-import { eyebrow, reskinEyebrow } from "../data/copy";
 import { copyReveal } from "../motion/transitions";
 import { PaginationDashes } from "./PaginationIndicator";
 import type { ExperienceStyle } from "../experienceStyle";
 
-// The stage state machines remain authored in the original 381px coordinate
-// space. These wrappers move each intact animation into the reskin's lower
-// demo region without changing its internal entrance/exit values.
+// Layout from node 16923:10998: the white sheet is one 799px overlay resting at
+// y53, split into a 454px block holding the progress row and the stage window,
+// and a 345px block holding the copy and the FAB. The stage sits ABOVE the
+// copy, not below it.
+const SHEET_TOP = 53;
+const PROGRESS_ROW_TOP = SHEET_TOP + 28; // the block's own 28px top padding
+// "image space": bottom-anchored inside the upper block, so it ends where the
+// copy block begins.
+const STAGE_WINDOW = { top: 106, height: 401 } as const;
+const COPY_TOP = STAGE_WINDOW.top + STAGE_WINDOW.height + 32; // 32px block padding
+
+// The stage state machines remain authored in their original 381x852 coordinate
+// space. These wrappers move each intact animation into the stage window
+// without changing its internal entrance/exit values, so `top` is where that
+// tall box starts relative to the window and is therefore negative.
+//
+// Each value centres that stage's settled content in the window. They are not
+// guesses: the content bounds were measured in the running app, per stage,
+// after its entrance had played out (heights 350, 369, 406, 381 and 263), and
+// the offsets fall out of centring those in 401px.
 const STAGE_LAYOUTS = [
-  { left: 0, top: 252, scale: 1 },
-  { left: 6, top: 280, scale: 1 },
-  { left: 6, top: 289, scale: 1 },
-  { left: 6, top: 258, scale: 1 },
-  { left: 6, top: 277, scale: 1 },
+  { left: 0, top: -117, scale: 1 },
+  { left: 6, top: -107, scale: 1 },
+  { left: 6, top: -119, scale: 1 },
+  { left: 6, top: -140, scale: 1 },
+  { left: 6, top: -101, scale: 1 },
 ] as const;
 
 // Shared chrome across Frames 4-8: progress + Skip at the top of the white
@@ -24,6 +40,7 @@ export function TourChrome({
   stepIndex,
   shownStepIndex,
   stepCount,
+  eyebrow,
   headline,
   body,
   stage,
@@ -40,6 +57,7 @@ export function TourChrome({
   stepIndex: number;
   shownStepIndex: number;
   stepCount: number;
+  eyebrow: string;
   headline: ReactNode;
   body: ReactNode;
   stage: ReactNode;
@@ -119,49 +137,66 @@ export function TourChrome({
     >
       {reskin ? (
         <>
-          <div style={{ position: "absolute", top: 93, right: 22, zIndex: 5 }}>
+          {/* Skip and the progress bar share one 21px row; the bar is centred
+              in it by PaginationIndicator's own geometry. */}
+          <div style={{ position: "absolute", top: PROGRESS_ROW_TOP, right: 24, zIndex: 5 }}>
             <SkipButton onSkip={onSkip} />
           </div>
+          {/* The stage window clips: the stages are taller than the space the
+              design gives them, and they now sit close to the status bar. */}
           <div
             style={{
               position: "absolute",
-              left: stageLayout.left,
-              top: stageLayout.top,
-              width: 381,
-              height: 852,
+              left: 0,
+              top: STAGE_WINDOW.top,
+              width: 393,
+              height: STAGE_WINDOW.height,
+              overflow: "hidden",
               zIndex: 1,
-              transform: `scale(${stageLayout.scale})`,
-              transformOrigin: "0 0",
             }}
           >
-            {stage}
+            <div
+              style={{
+                position: "absolute",
+                left: stageLayout.left,
+                top: stageLayout.top,
+                width: 381,
+                height: 852,
+                transform: `scale(${stageLayout.scale})`,
+                transformOrigin: "0 0",
+              }}
+            >
+              {stage}
+            </div>
+
+            {/* My Team's roster carries on past the foot of the window, so it
+                fades into the sheet instead of meeting the clip as a cut row. */}
+            {shownStepIndex === 3 && (
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: 0,
+                  width: 393,
+                  height: 96,
+                  zIndex: 2,
+                  pointerEvents: "none",
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0), #ffffff 70%)",
+                }}
+              />
+            )}
           </div>
         </>
       ) : (
         <div style={{ position: "absolute", left: 0, top: 6, width: 393, height: 530, overflow: "hidden" }}>
           <div style={{ position: "absolute", left: 6, top: 0, width: 381, height: 530 }}>
-            <div style={{ position: "absolute", top: 59, right: 12, zIndex: 5 }}>
+            <div style={{ position: "absolute", top: 59, right: 16, zIndex: 5 }}>
               <SkipButton onSkip={onSkip} />
             </div>
             {stage}
           </div>
         </div>
-      )}
-
-      {reskin && shownStepIndex === 3 && (
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 731,
-            width: 393,
-            height: 121,
-            zIndex: 2,
-            pointerEvents: "none",
-            background: "linear-gradient(to bottom, rgba(255,255,255,0), #ffffff 55%)",
-          }}
-        />
       )}
 
       {/* "Copy Reveal": headline and supporting description fade in together
@@ -176,16 +211,16 @@ export function TourChrome({
         transition={copyExiting ? { ...copyReveal, delay: copyExitDelayMs / 1000 } : copyReveal}
         style={{
           position: "absolute",
-          left: reskin ? 20 : 6,
-          top: reskin ? 162 : 556,
-          width: reskin ? 353 : 381,
+          left: reskin ? 24 : 6,
+          top: reskin ? COPY_TOP : 556,
+          width: reskin ? 345 : 381,
           boxSizing: "border-box",
           padding: reskin ? 0 : "0 16px",
           display: "flex",
           flexDirection: "column",
-          alignItems: reskin ? "flex-start" : "center",
+          alignItems: "flex-start",
           gap: reskin ? 12 : 6,
-          textAlign: reskin ? "left" : "center",
+          textAlign: "left",
           zIndex: 3,
         }}
       >
@@ -199,7 +234,7 @@ export function TourChrome({
             color: reskin ? "#384250" : "var(--color-text-secondary)",
           }}
         >
-          {reskin ? reskinEyebrow : eyebrow}
+          {eyebrow}
         </span>
         <span
           style={{
@@ -208,7 +243,7 @@ export function TourChrome({
             fontSize: reskin ? 32 : 24,
             lineHeight: reskin ? "40px" : "32px",
             letterSpacing: -0.33,
-            color: reskin ? "var(--color-bluegray-900)" : "var(--color-blue-700)",
+            color: "var(--color-bluegray-900)",
           }}
         >
           {headline}
@@ -237,6 +272,11 @@ export function TourChrome({
 // Figma's "utility-secondary / xsmall" Skip button renders as plain text —
 // no pill, border, or fill — so the DS chip styling this used to have was
 // never part of the design.
+//
+// Both styles carry a trailing arrow. Its measurements come from the button's own
+// variables (node 16398:67818): size/icon/button/sm = 16 for the glyph,
+// size/padding/xs = 4 for the gap, colour/text/link/secondary/base = #0067dc
+// for both text and icon. That is what widens the node from 31 to 51px.
 function SkipButton({ onSkip }: { onSkip: () => void }) {
   return (
     <button
@@ -251,33 +291,52 @@ function SkipButton({ onSkip }: { onSkip: () => void }) {
         fontSize: 14,
         color: "var(--color-blue-700)",
         cursor: "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
       }}
     >
       Skip
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+        <path
+          d="M3.5 8h9M9 4.5 12.5 8 9 11.5"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
     </button>
   );
 }
 
 function NextFab({ experienceStyle, isLastStep, onPress, pulse }: { experienceStyle: ExperienceStyle; isLastStep: boolean; onPress: () => void; pulse: number }) {
+  const reskin = experienceStyle === "reskin";
+  const label = isLastStep ? "FINISH" : "NEXT";
+  // Right-align to the same edge as the former square FAB (right: 20). The
+  // reskin follows the copy block's own 24px padding instead.
+  const top = reskin ? 764 : 747;
+
   return (
     <motion.button
       type="button"
-      aria-label={isLastStep ? "Finish" : "Next"}
+      aria-label={label}
       onClick={onPress}
       whileTap={{ scale: 0.94 }}
       style={{
         position: "absolute",
-        left: experienceStyle === "reskin" ? 317 : 320,
-        top: experienceStyle === "reskin" ? 757 : 747,
-        width: 56,
+        right: reskin ? 24 : 20,
+        top,
+        width: 140,
         height: 56,
-        borderRadius: 16,
+        borderRadius: 100,
         background: "var(--color-blue-700)",
         color: "#fff",
         border: "none",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        gap: 8,
         cursor: "pointer",
         boxShadow: "0 1px 2px rgba(16,24,40,0.05)",
         zIndex: 6,
@@ -293,13 +352,24 @@ function NextFab({ experienceStyle, isLastStep, onPress, pulse }: { experienceSt
           style={{
             position: "absolute",
             inset: -3,
-            borderRadius: 19,
+            borderRadius: 103,
             border: "2px solid var(--color-blue-700)",
             pointerEvents: "none",
           }}
         />
       )}
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+      <span
+        style={{
+          fontFamily: "var(--font-family-base)",
+          fontWeight: 700,
+          fontSize: 14,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </span>
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
         <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </motion.button>

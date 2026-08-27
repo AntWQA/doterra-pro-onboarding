@@ -25,36 +25,53 @@ export const loading = {
   greetingLine2: "{first name}",
 };
 
-export const eyebrow = "tools to help you";
-export const reskinEyebrow = "tools to help you";
-
+// The eyebrow used to be one shared string ("tools to help you") repeated on
+// every slide; the updated frames each name their own feature. Rendered
+// through `text-transform: uppercase`, so the casing here is the natural form
+// rather than how it appears on screen.
+//
+// Slide 4 is "Pro Advisor" per the designer. The exported frame still showed
+// the old shared line at the time of writing, so trust this list over a
+// re-export of 16179:29705 unless that frame has caught up.
+//
+// Two strings deliberately DIVERGE from the Figma source, both agreed as
+// typos rather than intent: frame 4's body is written "doTERRA" there,
+// missing the macron every other string in the app uses, and frame 8's body
+// is written "Ai Insights" against the "AI" in frame 4's headline and frame
+// 6's eyebrow. Corrected here to "dōTERRA" and "AI Insights". Worth pushing
+// back into the design file so the two do not drift apart again.
 export const tourFrames = [
   {
     key: "advisor",
-    headline: "Grow with Confidence",
-    body: "Ask questions, get personalised advice, and discover the next best actions to grow your dōTERRA business with Pro Advisor.",
+    eyebrow: "Pro Advisor",
+    headline: "Powerful Pro Business Advice, Powered by AI",
+    body: "Your personal dōTERRA AI advisor, powered by live business data",
   },
   {
     key: "tracking",
-    headline: "Track what matters",
-    body: "Stay on top of your compensation, uncover valuable insights, and see reward opportunities as your business grows.",
+    eyebrow: "Pro Dashboard",
+    headline: "Your progress, in one view",
+    body: "Your business dashboard helps you stay on top of your compensation, uncover valuable insights, and see reward progress as your business grows.",
   },
   {
     key: "insights",
-    headline: "Find insights that drive action",
+    eyebrow: "AI Business Insights",
+    headline: "Take action on AI insights",
     body: "Receive intelligent observations that highlight opportunities, surface important tasks, and help you make smarter business decisions.",
   },
   {
     key: "team",
-    headline: "Lead with Confidence",
+    eyebrow: "My Team",
+    headline: "Help your team grow",
     body: "Manage your organisation with confidence, track performance, and strengthen relationships through meaningful engagement.",
   },
   {
     key: "tasks",
-    headline: "Never miss a next step",
-    bodyPrefix: "Create your own tasks or let ",
+    eyebrow: "My Tasks",
+    headline: "Your business to-do list",
+    bodyPrefix: "Create your own tasks or generate personalised to-dos from AI Insights and ",
     bodyBold: "Pro Advisor",
-    bodySuffix: " generate personalised to-dos, keeping everything organised in one place.",
+    bodySuffix: ", keeping everything organised in one place.",
   },
 ];
 

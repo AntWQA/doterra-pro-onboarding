@@ -1,1 +1,1 @@
-export type ExperienceStyle = "original" | "reskin";
+export type ExperienceStyle = "original" | "reskin" | "hybrid";

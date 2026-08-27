@@ -6,7 +6,10 @@ import { LoadingPagination } from "../journey/PaginationIndicator";
 import type { ExperienceStyle } from "../experienceStyle";
 
 const LOADING_MS = 3000; // matches the frame's own name, "Three second loading state"
-const PAGINATION_MORPH_MS = 400;
+// Beat between the loading bar settling and the tour mounting. Previously
+// this doubled as the bar's morph-into-dashes duration; there are no dashes
+// now, but the pause itself still separates the two screens.
+const HANDOFF_MS = 400;
 
 // Frame 3 - "Three second loading state" (node 16169:2894). Per the live
 // Figma frame, the coloured block is the mesh-gradient shader fill CONTAINED
@@ -21,7 +24,7 @@ const PAGINATION_MORPH_MS = 400;
 // the time this mounts, and the white page is the overlay it sits on. That
 // also removes a blink this frame used to cause, fading its own copy of the
 // block out at the end of loading only for the tour to fade another one in.
-export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experienceStyle: ExperienceStyle; onDone: () => void; onSettled: () => void }) {
+export function Frame3Loading({ experienceStyle, guestTour = false, onDone, onSettled }: { experienceStyle: ExperienceStyle; guestTour?: boolean; onDone: () => void; onSettled: () => void }) {
   const [settled, setSettled] = useState(false);
   const reskin = experienceStyle === "reskin";
 
@@ -35,7 +38,7 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
     // The wordmark itself lives in App so it can survive into the tour; this
     // is the cue for it to move up into its resting position.
     onSettled();
-    const t = setTimeout(onDone, PAGINATION_MORPH_MS);
+    const t = setTimeout(onDone, HANDOFF_MS);
     return () => clearTimeout(t);
   }, [settled, onDone, onSettled]);
 
@@ -55,9 +58,13 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
         transition={copyReveal}
         style={{
           position: "absolute",
-          left: reskin ? 32 : 25,
+          // V1 bottom-anchors the greeting to the foot of the upper block
+          // (17034:7145 puts its box at y443-475, above the block's 32px
+          // bottom padding), so it reads as the last thing in the gradient
+          // rather than floating near the screen edge.
+          left: reskin ? 24 : 25,
           top: reskin ? undefined : 406,
-          bottom: reskin ? 48 : undefined,
+          bottom: reskin ? 377 : undefined,
           display: "flex",
           flexDirection: "column",
           gap: 12,
@@ -69,7 +76,7 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
         }}
       >
         <span>Welcome,</span>
-        <span>Emma</span>
+        <span>{guestTour ? "Member" : "Emma"}</span>
       </motion.div>
 
       {/* Skeleton bars are top-level siblings of the stage box in Figma
@@ -78,20 +85,27 @@ export function Frame3Loading({ experienceStyle, onDone, onSettled }: { experien
       <motion.div animate={{ opacity: settled ? 0 : 1 }} transition={{ duration: 0.3 }}>
         {reskin ? (
           <>
-            <Skeleton left={20} top={162} width={154} height={14} />
-            <Skeleton left={20} top={190} width={288} height={35} />
-            <Skeleton left={20} top={241} width={353} height={70} />
+            {/* The lower block of the sheet, on the same 24px gutter and 32px
+                top padding as the tour's copy, stacked with a 16px gap. */}
+            <Skeleton left={24} top={539} width={154} height={14} />
+            <Skeleton left={24} top={569} width={288} height={35} />
+            <Skeleton left={24} top={620} width={328} height={70} />
           </>
         ) : (
           <>
-            <Skeleton left={119.5} top={556} width={154} height={14} />
-            <Skeleton left={52.5} top={578} width={288} height={35} />
-            <Skeleton left={32.5} top={623} width={328} height={70} />
+            {/* Left-aligned on the greeting's own edge (x=25), matching the
+                copy alignment change. They were centred — measured gaps of
+                120/120, 53/53 and 33/33 — which read as a different column
+                from the left-aligned text directly above them. Widths are
+                unchanged, so the ragged right edge still reads as text. */}
+            <Skeleton left={25} top={556} width={154} height={14} />
+            <Skeleton left={25} top={578} width={288} height={35} />
+            <Skeleton left={25} top={623} width={328} height={70} />
           </>
         )}
       </motion.div>
 
-      <LoadingPagination experienceStyle={experienceStyle} loaded={settled} loadingMs={LOADING_MS} morphMs={PAGINATION_MORPH_MS} />
+      <LoadingPagination experienceStyle={experienceStyle} loaded={settled} loadingMs={LOADING_MS} />
     </div>
   );
 }

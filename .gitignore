@@ -29,3 +29,6 @@ dist-ssr
 .npmrc
 HANDOVER.md
 _deprecated/
+
+# Generated journey recordings
+recordings/

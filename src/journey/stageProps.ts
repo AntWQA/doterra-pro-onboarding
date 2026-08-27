@@ -9,5 +9,6 @@
 export interface StageProps {
   exiting: boolean;
   experienceStyle: ExperienceStyle;
+  guestTour?: boolean;
 }
 import type { ExperienceStyle } from "../experienceStyle";

@@ -9,7 +9,7 @@ import type { ExperienceStyle } from "../experienceStyle";
 // Reskinned login: the form occupies a full-width bottom sheet while the
 // lavender photograph remains visible as the compact hero above it.
 export function Frame2Login({ experienceStyle, collapsing, onLogin }: { experienceStyle: ExperienceStyle; collapsing: boolean; onLogin: () => void }) {
-  const reskin = experienceStyle === "reskin";
+  const reskin = experienceStyle === "reskin" || experienceStyle === "hybrid";
   return (
     <div style={{ position: "relative", height: "100%" }}>
       <motion.div

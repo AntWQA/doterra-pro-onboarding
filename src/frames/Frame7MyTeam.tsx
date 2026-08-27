@@ -6,6 +6,7 @@ import type { StageProps } from "../journey/stageProps";
 // x:15, y:0, width:1062, height:496. Regenerate this asset whenever the main
 // card is replaced so the header cannot retain stale edge or corner pixels.
 import teamHeader from "../assets/exports/my-team-header.png";
+import teamHeaderAuthenticated from "../assets/exports/my-team-header-authenticated.png";
 import rowThompson from "../assets/exports/my-team-row-thompson.png";
 import rowWilliams from "../assets/exports/my-team-row-williams.png";
 import rowWilson from "../assets/exports/my-team-row-wilson.png";
@@ -39,7 +40,7 @@ export const MYTEAM_ENTRANCE_MS =
   ROWS_SETTLED_MS + SWIPE_DURATION_MS + SWIPE_HOLD_MS + SWIPE_DURATION_MS;
 const EXIT_DROP = 560; // clears the stage's bottom clip at y=536 from top:145
 
-export function Frame7MyTeamStage({ exiting }: StageProps) {
+export function Frame7MyTeamStage({ exiting, guestTour = false }: StageProps) {
   const rowX = useMotionValue(0);
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export function Frame7MyTeamStage({ exiting }: StageProps) {
         overflow: "hidden",
       }}
     >
-      <img src={teamHeader} alt="" style={{ position: "absolute", left: 5.8, top: 4.5, width: 353.7, display: "block" }} />
+      <img src={guestTour ? teamHeader : teamHeaderAuthenticated} alt="" style={{ position: "absolute", left: 5.8, top: 4.5, width: 353.7, display: "block" }} />
 
       <RowReveal delay={0} left={12.5} top={180.5} src={rowThompson} />
 
